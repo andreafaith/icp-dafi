@@ -9,12 +9,12 @@ import {
   Card,
   CardContent,
   useTheme,
-  alpha,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import SecurityIcon from '@mui/icons-material/Security';
+import { alpha } from '@mui/material/styles';
 
 const FarmersPage = () => {
   const router = useRouter();
@@ -72,7 +72,7 @@ const FarmersPage = () => {
                         backgroundColor: 'white',
                         color: theme.palette.primary.main,
                         '&:hover': {
-                          backgroundColor: alpha('white', 0.9),
+                          backgroundColor: alpha('#FFFFFF', 0.9),
                         },
                       }}
                     >
@@ -89,7 +89,7 @@ const FarmersPage = () => {
                         color: 'white',
                         '&:hover': {
                           borderColor: 'white',
-                          backgroundColor: alpha('white', 0.1),
+                          backgroundColor: alpha('#FFFFFF', 0.1),
                         },
                       }}
                     >
