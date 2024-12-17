@@ -1,178 +1,149 @@
 import React, { useState } from 'react';
 import { GetServerSideProps } from 'next';
 import {
-    Box,
-    Container,
-    Typography,
-    Grid,
-    Card,
-    CardContent,
-    Button,
-    Avatar,
-    Tabs,
-    Tab,
-    TextField,
-    Divider,
+  Container,
+  Typography,
+  Box,
+  Grid,
+  Tabs,
+  Tab,
+  Alert,
+  CircularProgress,
 } from '@mui/material';
 import {
-    Person,
-    Security,
-    Notifications,
-    AccountBalance,
-    History,
+  Person as ProfileIcon,
+  Notifications as NotificationsIcon,
+  AccountBalanceWallet as WalletIcon,
+  History as HistoryIcon,
 } from '@mui/icons-material';
-import { Layout } from '../../components/layout/Layout';
-import { ProfileForm } from '../../components/profile/ProfileForm';
-import { SecuritySettings } from '../../components/profile/SecuritySettings';
+import Layout from '../../components/layout/Layout';
 import { NotificationSettings } from '../../components/profile/NotificationSettings';
 import { WalletSettings } from '../../components/profile/WalletSettings';
 import { ActivityHistory } from '../../components/profile/ActivityHistory';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../context/AuthContext';
 import { useProfile } from '../../hooks/useProfile';
 import { withPageAuthRequired } from '../../utils/auth';
 
-interface TabPanelProps {
-    children?: React.ReactNode;
-    index: number;
-    value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-    const { children, value, index, ...other } = props;
-
-    return (
-        <div
-            role="tabpanel"
-            hidden={value !== index}
-            id={`profile-tabpanel-${index}`}
-            aria-labelledby={`profile-tab-${index}`}
-            {...other}
-        >
-            {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-        </div>
-    );
-}
+// Mock activity data - Replace with actual data from your backend
+const mockActivities = [
+  {
+    id: '1',
+    type: 'investment',
+    title: 'Investment in DAFI Pool',
+    description: 'Successfully invested in the DAFI staking pool',
+    amount: 1000,
+    timestamp: new Date().toISOString(),
+    status: 'completed',
+    transactionHash: '0x123...',
+  },
+  {
+    id: '2',
+    type: 'staking',
+    title: 'Staking Rewards',
+    description: 'Received staking rewards',
+    amount: 50,
+    timestamp: new Date(Date.now() - 86400000).toISOString(),
+    status: 'completed',
+    transactionHash: '0x456...',
+  },
+  // Add more activities...
+];
 
 const ProfilePage: React.FC = () => {
-    const [tabValue, setTabValue] = useState(0);
-    const { user } = useAuth();
-    const { profile, loading, error, updateProfile } = useProfile();
+  const { isAuthenticated, isLoading: authLoading, error: authError, principal } = useAuth();
+  const { profile, loading: profileLoading, error: profileError } = useProfile(principal?.toString());
+  const [activeTab, setActiveTab] = useState(0);
 
-    const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-        setTabValue(newValue);
-    };
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+  };
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (error || !profile) {
-        return <div>Error loading profile</div>;
-    }
-
+  if (authLoading || profileLoading) {
     return (
-        <Layout>
-            <Container maxWidth="xl">
-                <Box py={4}>
-                    {/* Header */}
-                    <Grid container spacing={3} mb={4}>
-                        <Grid item xs={12} md={4}>
-                            <Card>
-                                <CardContent>
-                                    <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
-                                        <Avatar
-                                            src={profile.avatar}
-                                            alt={profile.name}
-                                            sx={{ width: 120, height: 120 }}
-                                        />
-                                        <Typography variant="h5">
-                                            {profile.name}
-                                        </Typography>
-                                        <Typography variant="body2" color="textSecondary">
-                                            Member since {new Date(profile.createdAt).toLocaleDateString()}
-                                        </Typography>
-                                        <Button
-                                            variant="outlined"
-                                            color="primary"
-                                            fullWidth
-                                        >
-                                            Edit Profile Picture
-                                        </Button>
-                                    </Box>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                        <Grid item xs={12} md={8}>
-                            <Card>
-                                <CardContent>
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={12} md={4}>
-                                            <Typography variant="subtitle2" color="textSecondary">
-                                                Total Assets
-                                            </Typography>
-                                            <Typography variant="h5">
-                                                {profile.stats.totalAssets}
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item xs={12} md={4}>
-                                            <Typography variant="subtitle2" color="textSecondary">
-                                                Total Investments
-                                            </Typography>
-                                            <Typography variant="h5">
-                                                ${profile.stats.totalInvestments.toLocaleString()}
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item xs={12} md={4}>
-                                            <Typography variant="subtitle2" color="textSecondary">
-                                                Portfolio Value
-                                            </Typography>
-                                            <Typography variant="h5">
-                                                ${profile.stats.portfolioValue.toLocaleString()}
-                                            </Typography>
-                                        </Grid>
-                                    </Grid>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                    </Grid>
-
-                    {/* Tabs and Content */}
-                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                        <Tabs
-                            value={tabValue}
-                            onChange={handleTabChange}
-                            aria-label="profile tabs"
-                        >
-                            <Tab icon={<Person />} label="Profile" />
-                            <Tab icon={<Security />} label="Security" />
-                            <Tab icon={<Notifications />} label="Notifications" />
-                            <Tab icon={<AccountBalance />} label="Wallet" />
-                            <Tab icon={<History />} label="Activity" />
-                        </Tabs>
-                    </Box>
-
-                    <TabPanel value={tabValue} index={0}>
-                        <ProfileForm
-                            profile={profile}
-                            onSubmit={updateProfile}
-                        />
-                    </TabPanel>
-                    <TabPanel value={tabValue} index={1}>
-                        <SecuritySettings />
-                    </TabPanel>
-                    <TabPanel value={tabValue} index={2}>
-                        <NotificationSettings />
-                    </TabPanel>
-                    <TabPanel value={tabValue} index={3}>
-                        <WalletSettings />
-                    </TabPanel>
-                    <TabPanel value={tabValue} index={4}>
-                        <ActivityHistory />
-                    </TabPanel>
-                </Box>
-            </Container>
-        </Layout>
+      <Layout>
+        <Container>
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+            <CircularProgress />
+          </Box>
+        </Container>
+      </Layout>
     );
+  }
+
+  if (authError || profileError) {
+    return (
+      <Layout>
+        <Container>
+          <Alert severity="error" sx={{ mt: 4 }}>
+            {authError || profileError}
+          </Alert>
+        </Container>
+      </Layout>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <Layout>
+        <Container>
+          <Alert severity="warning" sx={{ mt: 4 }}>
+            Please login to view your profile
+          </Alert>
+        </Container>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <Container maxWidth="xl">
+        <Box py={4}>
+          <Typography variant="h4" gutterBottom>
+            Profile Settings
+          </Typography>
+
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+            <Tabs value={activeTab} onChange={handleTabChange}>
+              <Tab icon={<ProfileIcon />} label="Profile" />
+              <Tab icon={<NotificationsIcon />} label="Notifications" />
+              <Tab icon={<WalletIcon />} label="Wallet" />
+              <Tab icon={<HistoryIcon />} label="Activity" />
+            </Tabs>
+          </Box>
+
+          {activeTab === 0 && profile && (
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Basic Information
+                  </Typography>
+                  <Typography>Name: {profile.name}</Typography>
+                  <Typography>Email: {profile.email}</Typography>
+                  <Typography>Member since: {new Date(profile.createdAt).toLocaleDateString()}</Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Statistics
+                  </Typography>
+                  <Typography>Total Investments: ${profile.stats.totalInvestments}</Typography>
+                  <Typography>Total Returns: ${profile.stats.totalReturns}</Typography>
+                  <Typography>Active Pools: {profile.stats.activePools}</Typography>
+                  <Typography>Voting Power: {profile.stats.votingPower}</Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          )}
+
+          {activeTab === 1 && <NotificationSettings />}
+          {activeTab === 2 && <WalletSettings />}
+          {activeTab === 3 && <ActivityHistory activities={mockActivities} />}
+        </Box>
+      </Container>
+    </Layout>
+  );
 };
 
 export const getServerSideProps: GetServerSideProps = withPageAuthRequired();

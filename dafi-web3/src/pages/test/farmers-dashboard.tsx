@@ -17,7 +17,7 @@ import {
   useTheme,
   Chip,
 } from '@mui/material';
-import { Layout } from '@/components/layout';
+import Layout from '@/components/layouts/Layout';
 import AddIcon from '@mui/icons-material/Add';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import AgricultureIcon from '@mui/icons-material/Agriculture';

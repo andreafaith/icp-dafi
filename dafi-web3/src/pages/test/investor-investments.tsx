@@ -16,7 +16,7 @@ import {
   Chip,
   LinearProgress,
 } from '@mui/material';
-import { Layout } from '@/components/Layout';
+import { Layout } from '@/components/layouts';
 
 // Mock investments data
 const mockInvestments = [

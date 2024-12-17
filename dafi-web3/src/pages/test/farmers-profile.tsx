@@ -10,7 +10,7 @@ import {
   TextField,
   Divider,
 } from '@mui/material';
-import { Layout } from '@/components/Layout';
+import Layout from '@/components/layouts/Layout';
 
 // Mock farmer profile data
 const mockProfile = {

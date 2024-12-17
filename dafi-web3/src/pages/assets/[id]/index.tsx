@@ -14,6 +14,8 @@ import {
     Chip,
     IconButton,
     Tooltip,
+    CircularProgress,
+    Alert,
 } from '@mui/material';
 import {
     Favorite,
@@ -24,7 +26,8 @@ import {
     AttachMoney,
     History,
 } from '@mui/icons-material';
-import { Layout } from '../../../components/layout/Layout';
+import { useRouter } from 'next/router';
+import Layout from '../../../components/layout/Layout';
 import { AssetChart } from '../../../components/assets/AssetChart';
 import { AssetDetails } from '../../../components/assets/AssetDetails';
 import { AssetInvestors } from '../../../components/assets/AssetInvestors';
@@ -57,20 +60,38 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const AssetPage: React.FC = () => {
+    const router = useRouter();
+    const { id } = router.query;
     const [tabValue, setTabValue] = useState(0);
     const [investModalOpen, setInvestModalOpen] = useState(false);
-    const { asset, loading, error } = useAsset();
+    const { asset, priceHistory, investors, transactions, loading, error } = useAsset(id as string);
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTabValue(newValue);
     };
 
     if (loading) {
-        return <div>Loading...</div>;
+        return (
+            <Layout>
+                <Container>
+                    <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+                        <CircularProgress />
+                    </Box>
+                </Container>
+            </Layout>
+        );
     }
 
     if (error || !asset) {
-        return <div>Error loading asset</div>;
+        return (
+            <Layout>
+                <Container>
+                    <Alert severity="error" sx={{ mt: 4 }}>
+                        {error || 'Failed to load asset'}
+                    </Alert>
+                </Container>
+            </Layout>
+        );
     }
 
     return (
@@ -81,145 +102,76 @@ const AssetPage: React.FC = () => {
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
                         <Box>
                             <Typography variant="h4" gutterBottom>
-                                {asset.name}
+                                {asset.name} ({asset.symbol})
                             </Typography>
                             <Box display="flex" alignItems="center" gap={2}>
-                                <Chip
-                                    label={asset.category}
-                                    color="primary"
-                                    variant="outlined"
-                                />
-                                <Chip
-                                    label={asset.status}
-                                    color={asset.status === 'Active' ? 'success' : 'default'}
-                                />
-                                <Typography variant="body2" color="textSecondary">
-                                    Created by {asset.owner.name}
+                                <Typography variant="h5" color="primary">
+                                    {formatCurrency(asset.price)}
+                                </Typography>
+                                <Typography
+                                    variant="body1"
+                                    color={asset.change24h >= 0 ? 'success.main' : 'error.main'}
+                                >
+                                    {asset.change24h >= 0 ? '+' : ''}{asset.change24h}%
                                 </Typography>
                             </Box>
                         </Box>
                         <Box display="flex" gap={2}>
-                            <Tooltip title="Add to Watchlist">
-                                <IconButton>
-                                    <Favorite />
-                                </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Share">
-                                <IconButton>
-                                    <Share />
-                                </IconButton>
-                            </Tooltip>
                             <Button
                                 variant="contained"
                                 color="primary"
+                                startIcon={<AttachMoney />}
                                 onClick={() => setInvestModalOpen(true)}
                             >
-                                Invest Now
+                                Invest
                             </Button>
+                            <IconButton>
+                                <Favorite />
+                            </IconButton>
+                            <IconButton>
+                                <Share />
+                            </IconButton>
                         </Box>
                     </Box>
 
-                    {/* Overview Cards */}
-                    <Grid container spacing={3} mb={4}>
-                        <Grid item xs={12} md={3}>
-                            <Card>
-                                <CardContent>
-                                    <Typography variant="subtitle2" color="textSecondary">
-                                        Current Value
-                                    </Typography>
-                                    <Typography variant="h5">
-                                        {formatCurrency(asset.currentValue)}
-                                    </Typography>
-                                    <Typography
-                                        variant="body2"
-                                        color={asset.valueChange >= 0 ? 'success.main' : 'error.main'}
-                                    >
-                                        {asset.valueChange >= 0 ? '+' : ''}{asset.valueChange}%
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                        <Grid item xs={12} md={3}>
-                            <Card>
-                                <CardContent>
-                                    <Typography variant="subtitle2" color="textSecondary">
-                                        Total Investment
-                                    </Typography>
-                                    <Typography variant="h5">
-                                        {formatCurrency(asset.totalInvestment)}
-                                    </Typography>
-                                    <Typography variant="body2" color="textSecondary">
-                                        From {asset.investorsCount} investors
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                        <Grid item xs={12} md={3}>
-                            <Card>
-                                <CardContent>
-                                    <Typography variant="subtitle2" color="textSecondary">
-                                        ROI
-                                    </Typography>
-                                    <Typography variant="h5">
-                                        {asset.roi}%
-                                    </Typography>
-                                    <Typography variant="body2" color="textSecondary">
-                                        Annual return
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                        <Grid item xs={12} md={3}>
-                            <Card>
-                                <CardContent>
-                                    <Typography variant="subtitle2" color="textSecondary">
-                                        Risk Score
-                                    </Typography>
-                                    <Typography variant="h5">
-                                        {asset.riskScore}/10
-                                    </Typography>
-                                    <Typography variant="body2" color="textSecondary">
-                                        {asset.riskLevel} risk
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                    </Grid>
-
-                    {/* Tabs and Content */}
+                    {/* Tabs */}
                     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                        <Tabs
-                            value={tabValue}
-                            onChange={handleTabChange}
-                            aria-label="asset tabs"
-                        >
-                            <Tab icon={<BarChart />} label="Performance" />
+                        <Tabs value={tabValue} onChange={handleTabChange}>
+                            <Tab icon={<BarChart />} label="Overview" />
                             <Tab icon={<Description />} label="Details" />
                             <Tab icon={<People />} label="Investors" />
                             <Tab icon={<History />} label="Transactions" />
                         </Tabs>
                     </Box>
 
+                    {/* Tab Panels */}
                     <TabPanel value={tabValue} index={0}>
-                        <AssetChart asset={asset} />
+                        <Grid container spacing={3}>
+                            <Grid item xs={12}>
+                                <AssetChart data={priceHistory.map(p => ({ timestamp: p.timestamp, value: p.price }))} />
+                            </Grid>
+                        </Grid>
                     </TabPanel>
+
                     <TabPanel value={tabValue} index={1}>
                         <AssetDetails asset={asset} />
                     </TabPanel>
+
                     <TabPanel value={tabValue} index={2}>
-                        <AssetInvestors assetId={asset.id} />
+                        <AssetInvestors investors={investors} />
                     </TabPanel>
+
                     <TabPanel value={tabValue} index={3}>
-                        <AssetTransactions assetId={asset.id} />
+                        <AssetTransactions transactions={transactions} />
                     </TabPanel>
                 </Box>
             </Container>
 
-            {/* Investment Modal */}
             <InvestmentModal
                 open={investModalOpen}
                 onClose={() => setInvestModalOpen(false)}
                 asset={asset}
+                type="invest"
             />
         </Layout>
     );

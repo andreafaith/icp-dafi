@@ -25,7 +25,7 @@ import {
   LinearProgress,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { Layout } from '../../components/Layout';
+import Layout from '@/components/layouts/Layout';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import BarChartIcon from '@mui/icons-material/BarChart';

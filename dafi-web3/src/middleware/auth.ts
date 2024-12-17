@@ -1,13 +1,19 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { AuthClient } from '@dfinity/auth-client';
-import { verifyJwtToken } from '../utils/jwt';
-import { getSession } from '../lib/session';
-import { rateLimit } from './rateLimit';
-import { User } from '../models/User';
+import jwt from 'jsonwebtoken';
+import { rateLimitMiddleware } from './rateLimit';
+import { UserModel } from '../models/User';
 
 export interface AuthenticatedRequest extends NextApiRequest {
     user?: any;
     principal?: string;
+}
+
+interface DecodedToken {
+    userId: string;
+    principal: string;
+    roles: string[];
+    iat: number;
+    exp: number;
 }
 
 export async function authMiddleware(
@@ -17,46 +23,35 @@ export async function authMiddleware(
 ) {
     try {
         // Apply rate limiting
-        await rateLimit(req, res);
+        await rateLimitMiddleware(req, res);
 
-        // Get session
-        const session = await getSession(req, res);
-        if (!session) {
-            return res.status(401).json({ error: 'Unauthorized: No session found' });
-        }
-
-        // Verify JWT token
+        // Get and verify JWT token
         const token = req.headers.authorization?.split(' ')[1];
         if (!token) {
             return res.status(401).json({ error: 'Unauthorized: No token provided' });
         }
 
-        const decoded = await verifyJwtToken(token);
-        if (!decoded) {
+        let decoded: DecodedToken;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET!) as DecodedToken;
+        } catch (error) {
             return res.status(401).json({ error: 'Unauthorized: Invalid token' });
         }
 
-        // Verify Internet Identity authentication
-        const authClient = await AuthClient.create();
-        const isAuthenticated = await authClient.isAuthenticated();
-        if (!isAuthenticated) {
-            return res.status(401).json({ error: 'Unauthorized: Not authenticated with Internet Identity' });
-        }
-
         // Get user from database
-        const user = await User.findOne({ principal: decoded.principal });
+        const user = await UserModel.findOne({ 
+            _id: decoded.userId,
+            principal: decoded.principal,
+            status: 'active'
+        });
+
         if (!user) {
-            return res.status(401).json({ error: 'Unauthorized: User not found' });
+            return res.status(401).json({ error: 'Unauthorized: User not found or inactive' });
         }
 
-        // Check if user is active
-        if (user.status !== 'active') {
-            return res.status(403).json({ error: 'Forbidden: User account is not active' });
-        }
-
-        // Attach user and principal to request
+        // Attach user to request
         req.user = user;
-        req.principal = decoded.principal;
+        req.principal = user.principal;
 
         // Continue to next middleware
         next();
@@ -73,8 +68,16 @@ export function roleGuard(...allowedRoles: string[]) {
                 return res.status(401).json({ error: 'Unauthorized: No user found' });
             }
 
-            if (!allowedRoles.includes(req.user.role)) {
-                return res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
+            const hasAllowedRole = req.user.roles.some((role: string) => 
+                allowedRoles.includes(role)
+            );
+
+            if (!hasAllowedRole) {
+                return res.status(403).json({ 
+                    error: 'Forbidden: Insufficient permissions',
+                    requiredRoles: allowedRoles,
+                    userRoles: req.user.roles
+                });
             }
 
             next();
@@ -85,34 +88,22 @@ export function roleGuard(...allowedRoles: string[]) {
     };
 }
 
-export async function validateApiKey(
-    req: AuthenticatedRequest,
-    res: NextApiResponse,
-    next: () => void
-) {
+export function kycGuard(req: AuthenticatedRequest, res: NextApiResponse, next: () => void) {
     try {
-        const apiKey = req.headers['x-api-key'];
-        if (!apiKey) {
-            return res.status(401).json({ error: 'Unauthorized: No API key provided' });
+        if (!req.user) {
+            return res.status(401).json({ error: 'Unauthorized: No user found' });
         }
 
-        // Verify API key
-        const user = await User.findOne({ 'apiKeys.key': apiKey });
-        if (!user) {
-            return res.status(401).json({ error: 'Unauthorized: Invalid API key' });
+        if (!req.user.isKYCVerified) {
+            return res.status(403).json({ 
+                error: 'Forbidden: KYC verification required',
+                kycStatus: req.user.kycData?.verificationStatus || 'pending'
+            });
         }
 
-        // Check if API key is active
-        const apiKeyObj = user.apiKeys.find(key => key.key === apiKey);
-        if (!apiKeyObj || !apiKeyObj.active) {
-            return res.status(401).json({ error: 'Unauthorized: API key is inactive' });
-        }
-
-        // Attach user to request
-        req.user = user;
         next();
     } catch (error) {
-        console.error('API key validation error:', error);
+        console.error('KYC guard error:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 }

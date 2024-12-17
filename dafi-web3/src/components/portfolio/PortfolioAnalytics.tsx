@@ -15,10 +15,47 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useWeb3 } from '@/contexts/Web3Context';
+import {
+  Box,
+  Card,
+  CardContent,
+  Grid,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip,
+} from '@mui/material';
+import {
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon,
+} from '@mui/icons-material';
 
 interface PortfolioAnalyticsProps {
   userId: string;
   role: 'farmer' | 'investor';
+}
+
+interface AssetMetrics {
+  name: string;
+  symbol: string;
+  allocation: number;
+  value: number;
+  quantity: number;
+  avgPrice: number;
+  currentPrice: number;
+  pnl: number;
+  pnlPercentage: number;
+}
+
+interface RiskMetrics {
+  volatility: number;
+  sharpeRatio: number;
+  maxDrawdown: number;
+  beta: number;
 }
 
 export const PortfolioAnalytics: React.FC<PortfolioAnalyticsProps> = ({
@@ -77,6 +114,152 @@ export const PortfolioAnalytics: React.FC<PortfolioAnalyticsProps> = ({
     );
   }
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  };
+
+  const formatPercentage = (value: number) => {
+    return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
+  };
+
+  const renderRiskMetrics = () => (
+    <Grid item xs={12}>
+      <Card>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Risk Metrics
+          </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={6} sm={3}>
+              <Typography variant="body2" color="text.secondary">
+                Volatility (30d)
+              </Typography>
+              <Typography variant="h6">
+                {formatPercentage(analytics.risk.volatility)}
+              </Typography>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Typography variant="body2" color="text.secondary">
+                Sharpe Ratio
+              </Typography>
+              <Typography variant="h6">
+                {analytics.risk.sharpeRatio.toFixed(2)}
+              </Typography>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Typography variant="body2" color="text.secondary">
+                Max Drawdown
+              </Typography>
+              <Typography variant="h6">
+                {formatPercentage(analytics.risk.maxDrawdown)}
+              </Typography>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Typography variant="body2" color="text.secondary">
+                Beta
+              </Typography>
+              <Typography variant="h6">
+                {analytics.risk.beta.toFixed(2)}
+              </Typography>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </Grid>
+  );
+
+  const renderAssetPerformance = () => (
+    <Grid item xs={12}>
+      <Card>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Asset Performance
+          </Typography>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Asset</TableCell>
+                  <TableCell align="right">Allocation</TableCell>
+                  <TableCell align="right">Quantity</TableCell>
+                  <TableCell align="right">Avg Price</TableCell>
+                  <TableCell align="right">Current Price</TableCell>
+                  <TableCell align="right">Value</TableCell>
+                  <TableCell align="right">P&L</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {analytics.assets.map((asset: any) => (
+                  <TableRow key={asset.symbol} hover>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Typography variant="body1">{asset.name}</Typography>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ ml: 1 }}
+                        >
+                          {asset.symbol}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell align="right">
+                      {formatPercentage(asset.allocation)}
+                    </TableCell>
+                    <TableCell align="right">{asset.quantity}</TableCell>
+                    <TableCell align="right">
+                      {formatCurrency(asset.avgPrice)}
+                    </TableCell>
+                    <TableCell align="right">
+                      {formatCurrency(asset.currentPrice)}
+                    </TableCell>
+                    <TableCell align="right">
+                      {formatCurrency(asset.value)}
+                    </TableCell>
+                    <TableCell align="right">
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'flex-end',
+                        }}
+                      >
+                        {asset.pnl >= 0 ? (
+                          <TrendingUpIcon
+                            fontSize="small"
+                            sx={{ color: 'success.main' }}
+                          />
+                        ) : (
+                          <TrendingDownIcon
+                            fontSize="small"
+                            sx={{ color: 'error.main' }}
+                          />
+                        )}
+                        <Chip
+                          label={`${formatCurrency(asset.pnl)} (${formatPercentage(
+                            asset.pnlPercentage,
+                          )})`}
+                          size="small"
+                          color={asset.pnl >= 0 ? 'success' : 'error'}
+                          sx={{ ml: 1 }}
+                        />
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </CardContent>
+      </Card>
+    </Grid>
+  );
+
   const renderPerformanceChart = () => (
     <div className="bg-white rounded-lg shadow p-4">
       <h3 className="text-lg font-semibold mb-4">Portfolio Performance</h3>
@@ -126,38 +309,6 @@ export const PortfolioAnalytics: React.FC<PortfolioAnalyticsProps> = ({
           <Legend />
         </PieChart>
       </ResponsiveContainer>
-    </div>
-  );
-
-  const renderRiskMetrics = () => (
-    <div className="bg-white rounded-lg shadow p-4">
-      <h3 className="text-lg font-semibold mb-4">Risk Metrics</h3>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <p className="text-sm text-gray-600">Sharpe Ratio</p>
-          <p className="text-xl font-semibold">
-            {analytics.risk.sharpeRatio.toFixed(2)}
-          </p>
-        </div>
-        <div>
-          <p className="text-sm text-gray-600">Sortino Ratio</p>
-          <p className="text-xl font-semibold">
-            {analytics.risk.sortinoRatio.toFixed(2)}
-          </p>
-        </div>
-        <div>
-          <p className="text-sm text-gray-600">Max Drawdown</p>
-          <p className="text-xl font-semibold">
-            {(analytics.risk.maxDrawdown * 100).toFixed(2)}%
-          </p>
-        </div>
-        <div>
-          <p className="text-sm text-gray-600">Volatility</p>
-          <p className="text-xl font-semibold">
-            {(analytics.risk.volatility * 100).toFixed(2)}%
-          </p>
-        </div>
-      </div>
     </div>
   );
 
@@ -246,6 +397,10 @@ export const PortfolioAnalytics: React.FC<PortfolioAnalyticsProps> = ({
             {renderReturnsBreakdown()}
           </>
         )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {renderAssetPerformance()}
       </div>
 
       <div className="bg-white rounded-lg shadow p-4">

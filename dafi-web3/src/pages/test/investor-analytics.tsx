@@ -24,7 +24,7 @@ import {
   ShowChart,
   Analytics as AnalyticsIcon,
 } from '@mui/icons-material';
-import { DashboardLayout } from '@/components/layout';
+import { DashboardLayout } from '@/components/layouts';
 
 // Mock data for investment analytics
 const mockPortfolioData = {

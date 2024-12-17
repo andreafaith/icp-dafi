@@ -1,148 +1,156 @@
 import React, { useState } from 'react';
-import { useWeb3 } from '@/contexts/Web3Context';
-import { Button, Input, Select, Alert } from '@/components/ui';
+import {
+  Box,
+  Button,
+  Typography,
+  Paper,
+  Divider,
+  Alert,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Dialog,
+  CircularProgress,
+} from '@mui/material';
+import {
+  AccountBalanceWallet as WalletIcon,
+  Close as CloseIcon,
+} from '@mui/icons-material';
+import { useRouter } from 'next/router';
+import { useWallet } from '@/contexts/WalletContext';
+import Image from 'next/image';
 
 interface AuthFormProps {
-  type: 'farmer' | 'investor';
-  onSuccess?: () => void;
+  mode: 'login' | 'register';
 }
 
-export const AuthForm: React.FC<AuthFormProps> = ({ type, onSuccess }) => {
-  const { connect, isConnected, principal } = useWeb3();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    role: type,
-    experience: '',
-    specialization: '',
-    investmentGoals: '',
-    riskProfile: 'moderate',
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+export const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
+  const router = useRouter();
+  const [walletDialogOpen, setWalletDialogOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { connect, isConnecting } = useWallet();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
+  const handleWalletConnect = async () => {
     try {
-      if (!isConnected) {
-        await connect();
+      setError(null);
+      const success = await connect();
+      if (success) {
+        setWalletDialogOpen(false);
+        router.push('/dashboard');
+      } else {
+        setError('Failed to connect wallet. Please try again.');
       }
-
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          walletAddress: principal,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Registration failed');
-      }
-
-      onSuccess?.();
     } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      console.error('Wallet connection error:', err);
+      setError('Failed to connect wallet. Please try again.');
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-4">
-        <Input
-          label="Full Name"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          required
-        />
-
-        <Input
-          label="Email"
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
-
-        {type === 'farmer' && (
-          <>
-            <Input
-              label="Farming Experience (years)"
-              type="number"
-              name="experience"
-              value={formData.experience}
-              onChange={handleChange}
-              required
-            />
-
-            <Input
-              label="Specialization"
-              name="specialization"
-              value={formData.specialization}
-              onChange={handleChange}
-              placeholder="e.g., Organic Farming, Livestock"
-              required
-            />
-          </>
-        )}
-
-        {type === 'investor' && (
-          <>
-            <Input
-              label="Investment Goals"
-              name="investmentGoals"
-              value={formData.investmentGoals}
-              onChange={handleChange}
-              placeholder="e.g., Long-term Growth, Regular Income"
-              required
-            />
-
-            <Select
-              label="Risk Profile"
-              name="riskProfile"
-              value={formData.riskProfile}
-              onChange={handleChange}
-              options={[
-                { value: 'conservative', label: 'Conservative' },
-                { value: 'moderate', label: 'Moderate' },
-                { value: 'aggressive', label: 'Aggressive' },
-              ]}
-              required
-            />
-          </>
-        )}
-      </div>
+    <Paper elevation={3} sx={{ p: 4, maxWidth: 500, mx: 'auto' }}>
+      <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Welcome to DaFi
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          {mode === 'login'
+            ? 'Connect your wallet to access your account'
+            : 'Create an account to get started'}
+        </Typography>
+      </Box>
 
       {error && (
-        <Alert variant="error" className="mt-4">
+        <Alert severity="error" sx={{ mb: 3 }}>
           {error}
         </Alert>
       )}
 
       <Button
-        type="submit"
-        variant="primary"
-        className="w-full"
-        loading={loading}
-        disabled={loading || (!isConnected && !principal)}
+        fullWidth
+        variant="contained"
+        size="large"
+        onClick={() => setWalletDialogOpen(true)}
+        startIcon={<WalletIcon />}
+        disabled={isConnecting}
+        sx={{ mb: 2 }}
       >
-        {isConnected ? 'Register' : 'Connect Wallet to Register'}
+        {isConnecting ? (
+          <CircularProgress size={24} color="inherit" />
+        ) : (
+          'Connect Wallet'
+        )}
       </Button>
-    </form>
+
+      <Dialog
+        open={walletDialogOpen}
+        onClose={() => setWalletDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <Box sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6">Connect Wallet</Typography>
+            <Button
+              onClick={() => setWalletDialogOpen(false)}
+              sx={{ minWidth: 'auto', p: 1 }}
+            >
+              <CloseIcon />
+            </Button>
+          </Box>
+          <List>
+            <ListItem
+              button
+              onClick={handleWalletConnect}
+              disabled={isConnecting}
+              sx={{
+                border: 1,
+                borderColor: 'divider',
+                borderRadius: 1,
+                mb: 1,
+                '&:hover': {
+                  backgroundColor: 'action.hover',
+                },
+              }}
+            >
+              <ListItemIcon>
+                <Image
+                  src="/walletmask-logo.png"
+                  alt="WalletMask"
+                  width={32}
+                  height={32}
+                />
+              </ListItemIcon>
+              <ListItemText
+                primary="WalletMask"
+                secondary="Connect using WalletMask"
+              />
+              {isConnecting && <CircularProgress size={24} />}
+            </ListItem>
+          </List>
+        </Box>
+      </Dialog>
+
+      <Box sx={{ mt: 3, textAlign: 'center' }}>
+        <Typography variant="body2" color="text.secondary">
+          By connecting your wallet, you agree to our{' '}
+          <Button
+            color="primary"
+            onClick={() => router.push('/terms')}
+            sx={{ p: 0, minWidth: 'auto', verticalAlign: 'baseline' }}
+          >
+            Terms of Service
+          </Button>{' '}
+          and{' '}
+          <Button
+            color="primary"
+            onClick={() => router.push('/privacy')}
+            sx={{ p: 0, minWidth: 'auto', verticalAlign: 'baseline' }}
+          >
+            Privacy Policy
+          </Button>
+        </Typography>
+      </Box>
+    </Paper>
   );
 };

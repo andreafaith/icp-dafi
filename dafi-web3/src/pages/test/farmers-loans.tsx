@@ -15,7 +15,7 @@ import {
   Button,
   Chip,
 } from '@mui/material';
-import { Layout } from '@/components/Layout';
+import Layout from '@/components/layouts/Layout';
 
 // Mock data for loans
 const mockLoans = [

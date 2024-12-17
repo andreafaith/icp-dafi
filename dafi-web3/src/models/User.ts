@@ -1,23 +1,31 @@
 import mongoose, { Document, Schema } from 'mongoose';
-import { Principal } from '@dfinity/principal';
 
 export interface IUser extends Document {
     principal: string;
-    name: string;
-    email: string;
-    walletAddress: string;
+    name?: string;
+    email?: string;
+    walletType: string;
+    walletAddress?: string;
     avatar?: string;
     bio?: string;
     createdAt: Date;
     updatedAt: Date;
-    isVerified: boolean;
-    role: 'farmer' | 'investor' | 'admin';
+    isKYCVerified: boolean;
+    roles: string[];
     status: 'active' | 'inactive' | 'suspended';
     lastLogin?: Date;
-    settings: {
+    settings?: {
         notifications: boolean;
         twoFactorEnabled: boolean;
         language: string;
+    };
+    kycData?: {
+        documentType?: string;
+        documentNumber?: string;
+        verificationStatus: 'pending' | 'verified' | 'rejected';
+        submissionDate?: Date;
+        verificationDate?: Date;
+        rejectionReason?: string;
     };
 }
 
@@ -30,28 +38,29 @@ const UserSchema = new Schema<IUser>({
     },
     name: {
         type: String,
-        required: true,
         trim: true,
     },
     email: {
         type: String,
-        required: true,
         unique: true,
+        sparse: true,
         trim: true,
         lowercase: true,
+        index: true,
+    },
+    walletType: {
+        type: String,
+        required: true,
+        enum: ['walletmask', 'plug', 'stoic'],
     },
     walletAddress: {
         type: String,
-        required: true,
         unique: true,
+        sparse: true,
+        index: true,
     },
-    avatar: {
-        type: String,
-    },
-    bio: {
-        type: String,
-        maxlength: 500,
-    },
+    avatar: String,
+    bio: String,
     createdAt: {
         type: Date,
         default: Date.now,
@@ -60,23 +69,23 @@ const UserSchema = new Schema<IUser>({
         type: Date,
         default: Date.now,
     },
-    isVerified: {
+    isKYCVerified: {
         type: Boolean,
         default: false,
     },
-    role: {
-        type: String,
-        enum: ['farmer', 'investor', 'admin'],
-        required: true,
+    roles: {
+        type: [String],
+        default: ['user'],
+        enum: ['user', 'farmer', 'investor', 'admin'],
+        index: true,
     },
     status: {
         type: String,
-        enum: ['active', 'inactive', 'suspended'],
         default: 'active',
+        enum: ['active', 'inactive', 'suspended'],
+        index: true,
     },
-    lastLogin: {
-        type: Date,
-    },
+    lastLogin: Date,
     settings: {
         notifications: {
             type: Boolean,
@@ -91,15 +100,21 @@ const UserSchema = new Schema<IUser>({
             default: 'en',
         },
     },
+    kycData: {
+        documentType: String,
+        documentNumber: String,
+        verificationStatus: {
+            type: String,
+            enum: ['pending', 'verified', 'rejected'],
+            default: 'pending',
+        },
+        submissionDate: Date,
+        verificationDate: Date,
+        rejectionReason: String,
+    },
 }, {
     timestamps: true,
 });
-
-// Indexes
-UserSchema.index({ email: 1 });
-UserSchema.index({ walletAddress: 1 });
-UserSchema.index({ role: 1 });
-UserSchema.index({ status: 1 });
 
 // Methods
 UserSchema.methods.toJSON = function() {
@@ -109,4 +124,11 @@ UserSchema.methods.toJSON = function() {
     return obj;
 };
 
+// Update the updatedAt field on save
+UserSchema.pre('save', function(next) {
+    this.updatedAt = new Date();
+    next();
+});
+
 export const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+export const UserModel = User;  // Add this line for backward compatibility

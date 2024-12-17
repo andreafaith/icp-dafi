@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom';
 import { Principal } from '@dfinity/principal';
+import jwt from 'jsonwebtoken';
 
 // Mock environment variables
 process.env = {
@@ -12,6 +13,8 @@ process.env = {
   NEXT_PUBLIC_ETHEREUM_RPC_URL: 'http://localhost:8545',
   NEXT_PUBLIC_BSC_RPC_URL: 'http://localhost:8546',
   NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID: 'test-project-id',
+  JWT_SECRET: 'test-secret',
+  MONGODB_URI: 'mongodb://localhost:27017/test',
 };
 
 // Mock Principal
@@ -24,9 +27,21 @@ declare global {
     autoRefreshOnNetworkChange: boolean;
   };
   var localStorage: Storage;
+  var testJwtToken: string;
 }
 
 global.mockPrincipal = Principal.fromText('2vxsx-fae');
+
+// Generate a test JWT token
+global.testJwtToken = jwt.sign(
+  {
+    userId: 'test-user-id',
+    principal: global.mockPrincipal.toString(),
+    roles: ['user'],
+  },
+  process.env.JWT_SECRET!,
+  { expiresIn: '1h' }
+);
 
 // Mock HttpAgent
 jest.mock('@dfinity/agent', () => ({
@@ -49,16 +64,41 @@ jest.mock('web3', () => {
   }));
 });
 
-// Mock Web3React
-jest.mock('@web3-react/core', () => ({
-  useWeb3React: jest.fn().mockReturnValue({
-    active: false,
-    activate: jest.fn(),
-    deactivate: jest.fn(),
-    account: null,
-    library: null,
-    connector: null,
-    error: null,
+// Mock WalletMask
+const mockPlug = {
+  requestConnect: jest.fn().mockResolvedValue(true),
+  getPrincipal: jest.fn().mockResolvedValue(global.mockPrincipal),
+  getBalance: jest.fn().mockResolvedValue(BigInt(1000000000)),
+  signMessage: jest.fn().mockResolvedValue('mocked-signature'),
+  disconnect: jest.fn().mockResolvedValue(undefined),
+  isConnected: jest.fn().mockResolvedValue(true),
+};
+
+Object.defineProperty(window, 'ic', {
+  value: { plug: mockPlug },
+  writable: true,
+});
+
+// Mock mongoose
+jest.mock('mongoose', () => {
+  const mongoose = jest.requireActual('mongoose');
+  return {
+    ...mongoose,
+    connect: jest.fn().mockResolvedValue(mongoose),
+    connection: {
+      ...mongoose.connection,
+      close: jest.fn().mockResolvedValue(undefined),
+    },
+  };
+});
+
+// Mock next/router
+jest.mock('next/router', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+    query: {},
   }),
 }));
 
@@ -73,6 +113,21 @@ Object.defineProperty(window, 'IntersectionObserver', {
   writable: true,
   configurable: true,
   value: MockIntersectionObserver
+});
+
+// Mock matchMedia
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
 });
 
 // Mock localStorage
@@ -102,6 +157,11 @@ Object.defineProperty(window, 'ethereum', {
   writable: true,
   value: ethereumMock
 });
+
+// Add TextEncoder and TextDecoder polyfills for Node.js environment
+const { TextEncoder, TextDecoder } = require('util');
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
 
 // Mock fetch
 global.fetch = jest.fn();

@@ -63,14 +63,15 @@ const HomePage = () => {
           subtitle="Connect farmers with investors through blockchain technology, enabling secure and transparent agricultural investments."
           primaryAction={{
             label: "Get Started",
-            onClick: () => window.location.href = './get-started'
+            onClick: () => router.push('/login')
           }}
           secondaryAction={{
             label: "Learn More",
-            onClick: () => window.location.href = './learn-more'
+            onClick: () => router.push('/about')
           }}
           imagePath="/images/hero-image.jpg"
           imageAlt="Agricultural Investment"
+          gradient={`linear-gradient(45deg, ${theme.palette.primary.main}40, ${theme.palette.secondary.main}40)`}
         />
         
         <Box sx={{ bgcolor: 'background.paper', py: 6 }}>
