@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Card, CardContent, Typography, useTheme, IconButton } from '@mui/material';
+import { Box, Card, CardContent, Typography, useTheme } from '@mui/material';
 import Image from 'next/image';
 
 interface FeatureCardProps {

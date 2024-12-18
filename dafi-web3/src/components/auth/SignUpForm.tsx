@@ -18,7 +18,7 @@ import {
 } from '@mui/icons-material';
 import { useRouter } from 'next/router';
 import NextLink from 'next/link';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 const steps = ['Create Account', 'Connect Wallet', 'Verify Identity'];
 
@@ -64,18 +64,32 @@ export const SignUpForm: React.FC = () => {
     setLoading(true);
 
     try {
-      const success = await signup(formData);
+      const success = await signup({
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+      });
+
       if (success) {
-        // Move to wallet connection step
         setActiveStep(1);
       } else {
         setError('Failed to create account');
       }
     } catch (err) {
       setError('An error occurred during sign up');
+      console.error('Sign up error:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleMouseDownPassword = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
   };
 
   const getStepContent = (step: number) => {
@@ -101,8 +115,8 @@ export const SignUpForm: React.FC = () => {
             />
             <TextField
               label="Email"
-              name="email"
               type="email"
+              name="email"
               value={formData.email}
               onChange={handleChange}
               required
@@ -110,8 +124,8 @@ export const SignUpForm: React.FC = () => {
             />
             <TextField
               label="Password"
-              name="password"
               type={showPassword ? 'text' : 'password'}
+              name="password"
               value={formData.password}
               onChange={handleChange}
               required
@@ -120,7 +134,9 @@ export const SignUpForm: React.FC = () => {
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
                       edge="end"
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -131,23 +147,37 @@ export const SignUpForm: React.FC = () => {
             />
             <TextField
               label="Confirm Password"
+              type={showPassword ? 'text' : 'password'}
               name="confirmPassword"
-              type="password"
               value={formData.confirmPassword}
               onChange={handleChange}
               required
               fullWidth
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
           </>
         );
       case 1:
         return (
-          <Box textAlign="center">
+          <Box sx={{ textAlign: 'center' }}>
             <Typography variant="h6" gutterBottom>
               Connect Your Wallet
             </Typography>
-            <Typography variant="body2" color="textSecondary" mb={3}>
-              Connect your wallet to continue with the registration process
+            <Typography color="textSecondary" paragraph>
+              Please connect your wallet to continue. This will be used for transactions on the platform.
             </Typography>
             <Button
               variant="contained"
@@ -161,25 +191,25 @@ export const SignUpForm: React.FC = () => {
         );
       case 2:
         return (
-          <Box textAlign="center">
+          <Box sx={{ textAlign: 'center' }}>
             <Typography variant="h6" gutterBottom>
               Verify Your Identity
             </Typography>
-            <Typography variant="body2" color="textSecondary" mb={3}>
-              Complete the KYC process to start using our platform
+            <Typography color="textSecondary" paragraph>
+              Complete the KYC process to start using the platform.
             </Typography>
             <Button
               variant="contained"
               color="primary"
-              onClick={() => router.push('/onboarding/kyc')}
+              onClick={() => router.push('/onboarding')}
               fullWidth
             >
-              Start KYC Process
+              Start Verification
             </Button>
           </Box>
         );
       default:
-        return null;
+        return 'Unknown step';
     }
   };
 
@@ -191,16 +221,15 @@ export const SignUpForm: React.FC = () => {
         display: 'flex',
         flexDirection: 'column',
         gap: 2,
+        width: '100%',
         maxWidth: 400,
-        mx: 'auto',
-        p: 3,
       }}
     >
-      <Typography variant="h5" align="center" gutterBottom>
-        Create Account
+      <Typography variant="h5" component="h1" gutterBottom>
+        Sign Up
       </Typography>
 
-      <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
+      <Stepper activeStep={activeStep} alternativeLabel>
         {steps.map((label) => (
           <Step key={label}>
             <StepLabel>{label}</StepLabel>
@@ -210,7 +239,9 @@ export const SignUpForm: React.FC = () => {
 
       {error && <Alert severity="error">{error}</Alert>}
 
-      {getStepContent(activeStep)}
+      <Box sx={{ mt: 2 }}>
+        {getStepContent(activeStep)}
+      </Box>
 
       {activeStep === 0 && (
         <>
@@ -218,15 +249,14 @@ export const SignUpForm: React.FC = () => {
             type="submit"
             variant="contained"
             color="primary"
-            size="large"
-            disabled={loading}
             fullWidth
+            disabled={loading}
           >
             {loading ? 'Creating Account...' : 'Create Account'}
           </Button>
 
-          <Box display="flex" justifyContent="center" mt={2}>
-            <NextLink href="/auth/signin" passHref>
+          <Box sx={{ textAlign: 'center', mt: 2 }}>
+            <NextLink href="/login" passHref>
               <Link>Already have an account? Sign in</Link>
             </NextLink>
           </Box>
@@ -235,3 +265,5 @@ export const SignUpForm: React.FC = () => {
     </Box>
   );
 };
+
+export default SignUpForm;

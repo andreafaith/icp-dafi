@@ -15,7 +15,7 @@ import {
 } from '@mui/icons-material';
 import { useRouter } from 'next/router';
 import NextLink from 'next/link';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const SignInForm: React.FC = () => {
   const router = useRouter();
@@ -41,17 +41,22 @@ export const SignInForm: React.FC = () => {
     setLoading(true);
 
     try {
-      const success = await login(formData.email, formData.password);
-      if (success) {
-        router.push('/dashboard');
-      } else {
-        setError('Invalid email or password');
-      }
+      await login();
+      router.push('/dashboard');
     } catch (err) {
       setError('An error occurred during sign in');
+      console.error('Sign in error:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleMouseDownPassword = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
   };
 
   return (
@@ -62,12 +67,11 @@ export const SignInForm: React.FC = () => {
         display: 'flex',
         flexDirection: 'column',
         gap: 2,
+        width: '100%',
         maxWidth: 400,
-        mx: 'auto',
-        p: 3,
       }}
     >
-      <Typography variant="h5" align="center" gutterBottom>
+      <Typography variant="h5" component="h1" gutterBottom>
         Sign In
       </Typography>
 
@@ -75,27 +79,29 @@ export const SignInForm: React.FC = () => {
 
       <TextField
         label="Email"
-        name="email"
         type="email"
+        name="email"
         value={formData.email}
         onChange={handleChange}
-        required
         fullWidth
+        required
       />
 
       <TextField
         label="Password"
-        name="password"
         type={showPassword ? 'text' : 'password'}
+        name="password"
         value={formData.password}
         onChange={handleChange}
-        required
         fullWidth
+        required
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
               <IconButton
-                onClick={() => setShowPassword(!showPassword)}
+                aria-label="toggle password visibility"
+                onClick={handleClickShowPassword}
+                onMouseDown={handleMouseDownPassword}
                 edge="end"
               >
                 {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -109,21 +115,19 @@ export const SignInForm: React.FC = () => {
         type="submit"
         variant="contained"
         color="primary"
-        size="large"
-        disabled={loading}
         fullWidth
+        disabled={loading}
       >
         {loading ? 'Signing in...' : 'Sign In'}
       </Button>
 
-      <Box display="flex" justifyContent="space-between" mt={2}>
-        <NextLink href="/auth/forgot-password" passHref>
-          <Link>Forgot password?</Link>
-        </NextLink>
-        <NextLink href="/auth/signup" passHref>
-          <Link>Don't have an account? Sign up</Link>
+      <Box sx={{ textAlign: 'center', mt: 2 }}>
+        <NextLink href="/forgot-password" passHref>
+          <Link>Forgot Password?</Link>
         </NextLink>
       </Box>
     </Box>
   );
 };
+
+export default SignInForm;

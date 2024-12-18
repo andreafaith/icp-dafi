@@ -26,27 +26,16 @@ interface ChartData {
 interface AssetChartProps {
   data: ChartData[];
   title?: string;
-  symbol?: string;
   change24h?: number;
 }
 
 export const AssetChart: React.FC<AssetChartProps> = ({
   data,
   title = 'Price Chart',
-  symbol = 'DAFI',
   change24h = 0,
 }) => {
   const theme = useTheme();
   const [timeframe, setTimeframe] = useState('24h');
-
-  const handleTimeframeChange = (
-    event: React.MouseEvent<HTMLElement>,
-    newTimeframe: string,
-  ) => {
-    if (newTimeframe !== null) {
-      setTimeframe(newTimeframe);
-    }
-  };
 
   const formatXAxis = (timestamp: number) => {
     const date = new Date(timestamp);
@@ -89,6 +78,12 @@ export const AssetChart: React.FC<AssetChartProps> = ({
       );
     }
     return null;
+  };
+
+  const handleTimeframeChange = (_: React.MouseEvent<HTMLElement>, newTimeframe: string | null) => {
+    if (newTimeframe !== null) {
+      setTimeframe(newTimeframe);
+    }
   };
 
   return (

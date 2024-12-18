@@ -1,0 +1,39 @@
+type Result_2 = 
+ variant {
+   err: text;
+   ok: FarmAsset;
+ };
+type Result_1 = 
+ variant {
+   err: text;
+   ok: text;
+ };
+type Result = 
+ variant {
+   err: text;
+   ok;
+ };
+type FarmAsset = 
+ record {
+   assetType: text;
+   farmerId: principal;
+   id: text;
+   location: text;
+   registrationDate: int;
+   size: float64;
+   status: AssetStatus;
+   valuation: nat;
+ };
+type AssetStatus = 
+ variant {
+   Available;
+   Invested;
+   Sold;
+ };
+service : {
+  getAsset: (text) -> (Result_2) query;
+  getAssetsByFarmer: (principal) -> (vec FarmAsset) query;
+  getAvailableAssets: () -> (vec FarmAsset) query;
+  registerAsset: (text, text, float64, nat) -> (Result_1);
+  updateAssetStatus: (text, AssetStatus) -> (Result);
+}

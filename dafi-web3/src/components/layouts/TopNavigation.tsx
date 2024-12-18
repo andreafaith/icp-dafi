@@ -25,9 +25,11 @@ import {
   Gavel as GovernanceIcon,
   Analytics as AnalyticsIcon,
   MonetizationOn as StakingIcon,
+  Dashboard as DashboardIcon,
 } from '@mui/icons-material';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { useAuth } from '../../hooks/useAuth';
 
 interface TopNavigationProps {
   theme: 'light' | 'dark';
@@ -39,6 +41,7 @@ const TopNavigation: React.FC<TopNavigationProps> = ({
   onThemeToggle,
 }) => {
   const router = useRouter();
+  const { user } = useAuth();
   const muiTheme = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [walletAnchorEl, setWalletAnchorEl] = useState<null | HTMLElement>(null);
@@ -82,7 +85,6 @@ const TopNavigation: React.FC<TopNavigationProps> = ({
   };
 
   const mainNavItems = [
-    { name: 'Dashboard', path: '/dashboard' },
     { name: 'Assets', path: '/assets' },
     { name: 'Markets', path: '/markets' },
     { name: 'Portfolio', path: '/portfolio' },
@@ -126,7 +128,21 @@ const TopNavigation: React.FC<TopNavigationProps> = ({
           </Typography>
 
           {/* Main Navigation */}
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+          <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+            {user && (
+              <Link 
+                href={user.role === 'farmer' ? '/dashboard/farmer' : '/dashboard/investor'} 
+                passHref
+              >
+                <Button
+                  startIcon={<DashboardIcon />}
+                  color="inherit"
+                  sx={{ ml: 2 }}
+                >
+                  Dashboard
+                </Button>
+              </Link>
+            )}
             {mainNavItems.map((item) => (
               <Button
                 key={item.name}
@@ -146,7 +162,6 @@ const TopNavigation: React.FC<TopNavigationProps> = ({
                 {item.name}
               </Button>
             ))}
-
             {/* DeFi Menu Button */}
             <Button
               onClick={handleOpenDefiMenu}

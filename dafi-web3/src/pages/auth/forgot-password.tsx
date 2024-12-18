@@ -1,11 +1,26 @@
 import React, { useState } from 'react';
-import Link from 'next/link';
+import {
+  Box,
+  Button,
+  Container,
+  TextField,
+  Typography,
+  Paper,
+  Alert,
+  Link,
+  alpha,
+  useTheme,
+} from '@mui/material';
+import { motion } from 'framer-motion';
+import { Email } from '@mui/icons-material';
+import Logo from '../../components/Logo';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const theme = useTheme();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,80 +39,165 @@ const ForgotPassword = () => {
     }
   };
 
-  if (submitted) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Check your email</h2>
-              <p className="text-gray-600 mb-6">
-                We've sent password reset instructions to {email}
-              </p>
-              <Link href="/auth/login" className="text-indigo-600 hover:text-indigo-500">
+  const SuccessView = () => (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
+        py: 12,
+      }}
+    >
+      <Container maxWidth="sm">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Paper
+            elevation={24}
+            sx={{
+              p: 4,
+              borderRadius: 2,
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              textAlign: 'center',
+            }}
+          >
+            <Box
+              sx={{
+                width: 80,
+                height: 80,
+                borderRadius: '50%',
+                backgroundColor: alpha(theme.palette.success.main, 0.1),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto',
+                mb: 3,
+              }}
+            >
+              <Email sx={{ fontSize: 40, color: theme.palette.success.main }} />
+            </Box>
+            <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
+              Check your email
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+              We've sent password reset instructions to {email}
+            </Typography>
+            <Link href="/auth/login" style={{ textDecoration: 'none' }}>
+              <Button
+                variant="outlined"
+                fullWidth
+                sx={{
+                  py: 1.5,
+                  borderColor: theme.palette.primary.main,
+                  color: theme.palette.primary.main,
+                  '&:hover': {
+                    borderColor: theme.palette.primary.dark,
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  },
+                }}
+              >
                 Return to login
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+              </Button>
+            </Link>
+          </Paper>
+        </motion.div>
+      </Container>
+    </Box>
+  );
+
+  if (submitted) {
+    return <SuccessView />;
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Reset your password
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Or{' '}
-          <Link href="/auth/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-            return to login
-          </Link>
-        </p>
-      </div>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
+        py: 12,
+      }}
+    >
+      <Container maxWidth="sm">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Logo />
+          <Paper
+            elevation={24}
+            sx={{
+              p: 4,
+              borderRadius: 2,
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            }}
+          >
+            <Box sx={{ textAlign: 'center', mb: 4 }}>
+              <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
+                Reset Password
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Enter your email address and we'll send you instructions to reset your password
+              </Typography>
+            </Box>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded">
+              <Alert severity="error" sx={{ mb: 3 }}>
                 {error}
-              </div>
+              </Alert>
             )}
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-            </div>
+            <form onSubmit={handleSubmit}>
+              <TextField
+                fullWidth
+                label="Email Address"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                margin="normal"
+                required
+                sx={{ mb: 3 }}
+              />
 
-            <div>
-              <button
+              <Button
+                fullWidth
                 type="submit"
+                variant="contained"
+                size="large"
                 disabled={isLoading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                sx={{
+                  py: 1.5,
+                  mb: 2,
+                  backgroundColor: theme.palette.primary.main,
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.9),
+                  },
+                }}
               >
-                {isLoading ? 'Sending...' : 'Send reset instructions'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+                {isLoading ? 'Sending...' : 'Send Reset Instructions'}
+              </Button>
+
+              <Box sx={{ textAlign: 'center' }}>
+                <Link href="/auth/login" style={{ textDecoration: 'none' }}>
+                  <Typography
+                    variant="body2"
+                    color="primary"
+                    sx={{ '&:hover': { textDecoration: 'underline' } }}
+                  >
+                    Back to login
+                  </Typography>
+                </Link>
+              </Box>
+            </form>
+          </Paper>
+        </motion.div>
+      </Container>
+    </Box>
   );
 };
 

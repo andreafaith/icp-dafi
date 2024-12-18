@@ -1,36 +1,34 @@
 {
   "canisters": {
-    "dafi_frontend": {
-      "frontend": {
-        "entrypoint": "src/index.html"
-      },
-      "source": ["dist/"],
-      "type": "assets"
-    },
-    "dafi_backend": {
-      "main": "src/backend/main.mo",
+    "dafi_kyc": {
+      "main": "src/backend/kyc.mo",
       "type": "motoko"
     },
-    "dafi_assets": {
-      "dependencies": ["dafi_backend"],
-      "type": "motoko",
-      "main": "src/backend/assets.mo"
+    "dafi_asset": {
+      "main": "src/backend/asset.mo",
+      "type": "motoko"
     },
-    "dafi_ledger": {
-      "dependencies": ["dafi_backend"],
-      "type": "motoko",
-      "main": "src/backend/ledger.mo"
+    "dafi_investment": {
+      "main": "src/backend/investment.mo",
+      "type": "motoko"
     },
-    "dafi_oracle": {
-      "dependencies": ["dafi_backend"],
-      "type": "motoko",
-      "main": "src/backend/oracle.mo"
+    "dafi_frontend": {
+      "dependencies": [
+        "dafi_kyc",
+        "dafi_asset",
+        "dafi_investment"
+      ],
+      "frontend": {
+        "entrypoint": "dafi-web3/src/app/page.tsx"
+      },
+      "source": ["dafi-web3/.next"],
+      "type": "assets"
     }
   },
   "defaults": {
     "build": {
       "args": "",
-      "packtool": "vessel"
+      "packtool": ""
     }
   },
   "networks": {

@@ -122,6 +122,18 @@ class KYCService {
       throw new Error('Failed to check verification');
     }
   }
+
+  async getUserType(principal: Principal): Promise<UserType | null> {
+    try {
+      const result = await this.actor.getUserType(principal);
+      if ('farmer' in result) return 'farmer';
+      if ('investor' in result) return 'investor';
+      return null;
+    } catch (error) {
+      console.error('Error getting user type:', error);
+      throw new Error('Failed to get user type');
+    }
+  }
 }
 
 export const kycService = new KYCService();

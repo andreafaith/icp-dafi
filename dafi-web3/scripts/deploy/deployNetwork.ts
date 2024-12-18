@@ -1,90 +1,51 @@
-import { ethers, network } from "hardhat";
-import { Contract } from "ethers";
-import { networkConfig, contractConfig } from "./config";
+import { ethers, network, run } from "hardhat";
+import { contractConfig } from "./config";
 import fs from "fs";
 import path from "path";
 
 async function main() {
-  const [deployer] = await ethers.getSigners();
-  console.log(`Deploying contracts to ${network.name} with account:`, deployer.address);
+    // Get network from Hardhat config (see hardhat.config.ts)
+    console.log(`Deploying to network: ${network.name}`);
 
-  const deployedContracts: { [key: string]: string } = {};
-  const deploymentInfo: any = {
-    network: network.name,
-    deployer: deployer.address,
-    contracts: {},
-  };
+    // Compile contracts
+    await run("compile");
 
-  // Deploy contracts in order
-  for (const [contractName, config] of Object.entries(contractConfig)) {
-    console.log(`\nDeploying ${contractName}...`);
+    // Deploy contracts
+    const contracts = await deployContracts();
 
-    // Resolve contract arguments
-    const args = config.args.map((arg: string) => {
-      if (typeof arg === "string" && arg.startsWith("$")) {
-        const dependencyName = arg.slice(1);
-        if (!deployedContracts[dependencyName]) {
-          throw new Error(`Dependency ${dependencyName} not found for ${contractName}`);
-        }
-        return deployedContracts[dependencyName];
-      }
-      return arg;
-    });
-
-    // Deploy contract
-    const Contract = await ethers.getContractFactory(contractName);
-    const contract = await Contract.deploy(...args);
-    await contract.deployed();
-
-    deployedContracts[contractName] = contract.address;
-    deploymentInfo.contracts[contractName] = {
-      address: contract.address,
-      args: args,
-    };
-
-    console.log(`${contractName} deployed to:`, contract.address);
-
-    // Verify contract if needed
-    if (networkConfig[network.name].verifyContract) {
-      console.log(`Verifying ${contractName}...`);
-      try {
-        await verifyContract(contract.address, args);
-        console.log(`${contractName} verified successfully`);
-      } catch (error) {
-        console.error(`Error verifying ${contractName}:`, error);
-      }
-    }
-  }
-
-  // Save deployment info
-  const deploymentPath = path.join(__dirname, "../../deployments");
-  if (!fs.existsSync(deploymentPath)) {
-    fs.mkdirSync(deploymentPath, { recursive: true });
-  }
-
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const filename = path.join(deploymentPath, `${network.name}_${timestamp}.json`);
-  fs.writeFileSync(filename, JSON.stringify(deploymentInfo, null, 2));
-  console.log(`\nDeployment info saved to ${filename}`);
-
-  return deploymentInfo;
+    // Save contract addresses
+    await saveContractAddresses(contracts);
 }
 
-async function verifyContract(address: string, args: any[]) {
-  try {
-    await hre.run("verify:verify", {
-      address: address,
-      constructorArguments: args,
-    });
-  } catch (error) {
-    console.error("Error verifying contract:", error);
-    throw error;
-  }
+async function deployContracts() {
+    const contracts: { [key: string]: string } = {};
+
+    for (const [name, config] of Object.entries(contractConfig)) {
+        console.log(`Deploying ${name}...`);
+        const factory = await ethers.getContractFactory(name);
+        const contract = await factory.deploy(...(config.args || []));
+        await contract.deployed();
+        contracts[name] = contract.address;
+        console.log(`${name} deployed to:`, contract.address);
+    }
+
+    return contracts;
+}
+
+async function saveContractAddresses(contracts: { [key: string]: string }) {
+    const deploymentPath = path.resolve(__dirname, "../deployments");
+    if (!fs.existsSync(deploymentPath)) {
+        fs.mkdirSync(deploymentPath, { recursive: true });
+    }
+
+    const filePath = path.join(deploymentPath, `${network.name}.json`);
+    fs.writeFileSync(filePath, JSON.stringify(contracts, null, 2));
+    console.log(`Contract addresses saved to: ${filePath}`);
 }
 
 main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+    .then(() => process.exit(0))
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });

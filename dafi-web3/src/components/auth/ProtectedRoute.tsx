@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useAuth } from '../../context/AuthContext';
+import { Principal } from '@dfinity/principal';
+import { useAuth } from '../../contexts/AuthContext';
 import { kycService } from '../../services/kyc';
 import { CircularProgress, Box, Typography, Button } from '@mui/material';
 
@@ -27,7 +28,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
       try {
         if (user?.principal) {
-          const verified = await kycService.isVerified(user.principal);
+          const principal = Principal.fromText(user.principal);
+          const verified = await kycService.isVerified(principal);
           setIsVerified(verified);
 
           if (!verified) {
@@ -36,8 +38,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           }
 
           if (requiredUserType) {
-            const actor = await kycService.actor;
-            const userType = await actor.getUserType(user.principal);
+            const userType = await kycService.getUserType(principal);
             
             if (!userType || userType !== requiredUserType) {
               router.push('/unauthorized');
@@ -58,10 +59,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (isLoading) {
     return (
-      <Box 
-        display="flex" 
-        justifyContent="center" 
-        alignItems="center" 
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
         minHeight="100vh"
       >
         <CircularProgress />
@@ -71,23 +72,23 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (!isVerified) {
     return (
-      <Box 
-        display="flex" 
-        flexDirection="column" 
-        justifyContent="center" 
-        alignItems="center" 
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
         minHeight="100vh"
         gap={2}
       >
         <Typography variant="h6">
-          Please complete your KYC verification to access this page
+          Please complete your verification process
         </Typography>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           color="primary"
           onClick={() => router.push('/onboarding')}
         >
-          Complete Verification
+          Go to Verification
         </Button>
       </Box>
     );

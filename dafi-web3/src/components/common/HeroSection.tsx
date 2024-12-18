@@ -179,47 +179,53 @@ const HeroSection: React.FC<HeroSectionProps> = ({
               {subtitle}
             </Typography>
             <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button
-                variant="contained"
-                sx={{
-                  bgcolor: '#4A7B3C',
-                  color: '#fff',
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1.1rem',
-                  fontWeight: 600,
-                  borderRadius: '8px',
-                  textTransform: 'none',
-                  '&:hover': {
-                    bgcolor: '#5C9A4B',
-                    transform: 'translateY(-2px)',
-                  },
-                  transition: 'all 0.3s ease',
-                }}
-              >
-                Get Started
-              </Button>
-              <Button
-                variant="outlined"
-                sx={{
-                  color: '#fff',
-                  borderColor: 'rgba(255,255,255,0.5)',
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1.1rem',
-                  fontWeight: 600,
-                  borderRadius: '8px',
-                  textTransform: 'none',
-                  '&:hover': {
-                    borderColor: '#fff',
-                    bgcolor: 'rgba(255,255,255,0.1)',
-                    transform: 'translateY(-2px)',
-                  },
-                  transition: 'all 0.3s ease',
-                }}
-              >
-                Learn More
-              </Button>
+              {primaryAction && (
+                <Button
+                  variant="contained"
+                  onClick={primaryAction.onClick}
+                  sx={{
+                    bgcolor: '#4A7B3C',
+                    color: '#fff',
+                    px: 4,
+                    py: 1.5,
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    borderRadius: '8px',
+                    textTransform: 'none',
+                    '&:hover': {
+                      bgcolor: '#5C9A4B',
+                      transform: 'translateY(-2px)',
+                    },
+                    transition: 'all 0.3s ease',
+                  }}
+                >
+                  {primaryAction.label}
+                </Button>
+              )}
+              {secondaryAction && (
+                <Button
+                  variant="outlined"
+                  onClick={secondaryAction.onClick}
+                  sx={{
+                    color: '#fff',
+                    borderColor: 'rgba(255,255,255,0.5)',
+                    px: 4,
+                    py: 1.5,
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    borderRadius: '8px',
+                    textTransform: 'none',
+                    '&:hover': {
+                      borderColor: '#fff',
+                      bgcolor: 'rgba(255,255,255,0.1)',
+                      transform: 'translateY(-2px)',
+                    },
+                    transition: 'all 0.3s ease',
+                  }}
+                >
+                  {secondaryAction.label}
+                </Button>
+              )}
             </Box>
           </Box>
           <Box

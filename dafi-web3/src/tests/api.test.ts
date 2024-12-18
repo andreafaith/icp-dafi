@@ -30,7 +30,8 @@ beforeAll(async () => {
         kycData: {
             documentType: '',
             documentNumber: '',
-            verificationStatus: 'none',
+            verificationStatus: 'pending',
+            submissionDate: new Date(),
         }
     });
 

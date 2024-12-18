@@ -9,7 +9,6 @@ import {
   Box,
   Chip,
   IconButton,
-  Tooltip,
   LinearProgress,
 } from '@mui/material';
 import {

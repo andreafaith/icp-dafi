@@ -1,0 +1,39 @@
+type Result_2 = 
+ variant {
+   err: text;
+   ok;
+ };
+type Result_1 = 
+ variant {
+   err: text;
+   ok: text;
+ };
+type Result = 
+ variant {
+   err: text;
+   ok: Investment;
+ };
+type InvestmentStatus = 
+ variant {
+   Active;
+   Completed;
+   Defaulted;
+ };
+type Investment = 
+ record {
+   amount: nat;
+   duration: int;
+   farmerId: principal;
+   id: text;
+   interestRate: float64;
+   investorId: principal;
+   startDate: int;
+   status: InvestmentStatus;
+ };
+service : {
+  completeInvestment: (text) -> (Result_2);
+  createInvestment: (principal, nat, float64, int) -> (Result_1);
+  getInvestment: (text) -> (Result) query;
+  getInvestmentsByFarmer: (principal) -> (vec Investment) query;
+  getInvestmentsByInvestor: (principal) -> (vec Investment) query;
+}

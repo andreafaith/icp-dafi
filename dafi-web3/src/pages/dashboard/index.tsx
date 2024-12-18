@@ -10,10 +10,11 @@ import {
 } from '@mui/material';
 import { useAuth } from '../../context/AuthContext';
 import { useWalletContext } from '../../context/WalletContext';
-import { withPageAuthRequired } from '../../utils/auth';
 import Layout from '../../components/layout/Layout';
 import { AssetList } from '../../components/assets/AssetList';
 import { WalletButton } from '../../components/common/WalletButton';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 
 // Mock data for development
 const mockAssets = [
@@ -38,78 +39,73 @@ const mockAssets = [
 ];
 
 const DashboardPage: React.FC = () => {
-  const { isAuthenticated, isLoading: authLoading, error: authError } = useAuth();
-  const { isConnected, isConnecting, error: walletError } = useWalletContext();
+  const router = useRouter();
+  const { isAuthenticated, isLoading: authLoading, user, isInitialized } = useAuth();
+  const { isConnected, isConnecting } = useWalletContext();
 
-  if (authLoading || isConnecting) {
+  useEffect(() => {
+    if (isInitialized && !authLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isInitialized, authLoading, isAuthenticated, router]);
+
+  // Show loading state while authentication is initializing
+  if (!isInitialized || authLoading) {
     return (
-      <Layout>
-        <Container>
-          <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-            <CircularProgress />
-          </Box>
-        </Container>
-      </Layout>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <CircularProgress />
+      </Box>
     );
   }
 
-  if (authError || walletError) {
-    return (
-      <Layout>
-        <Container>
-          <Alert severity="error" sx={{ mt: 4 }}>
-            {authError || walletError}
-          </Alert>
-        </Container>
-      </Layout>
-    );
-  }
-
+  // If not authenticated, don't render anything (useEffect will redirect)
   if (!isAuthenticated) {
-    return (
-      <Layout>
-        <Container>
-          <Alert severity="warning" sx={{ mt: 4 }}>
-            Please login to view your dashboard
-          </Alert>
-        </Container>
-      </Layout>
-    );
+    return null;
   }
 
   return (
     <Layout>
-      <Container maxWidth="xl">
-        <Box py={4}>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="h4">Dashboard</Typography>
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Grid container spacing={3}>
+          {/* Welcome Section */}
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3, display: 'flex', flexDirection: 'column' }}>
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Typography variant="h4" component="h1" gutterBottom>
+                  Welcome{user?.role ? ` ${user.role}` : ''}!
+                </Typography>
                 <WalletButton />
               </Box>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Paper sx={{ p: 3 }} variant="outlined">
-                <Typography variant="h6" gutterBottom>
-                  Your Assets
-                </Typography>
-                {isConnected ? (
-                  <AssetList assets={mockAssets} />
-                ) : (
-                  <Alert severity="info">
-                    Connect your wallet to view your assets
-                  </Alert>
-                )}
-              </Paper>
-            </Grid>
+            </Paper>
           </Grid>
-        </Box>
+
+          {/* Status Alert */}
+          <Grid item xs={12}>
+            {!isConnected && (
+              <Alert severity="warning" sx={{ mb: 2 }}>
+                Please connect your wallet to access all features
+              </Alert>
+            )}
+          </Grid>
+
+          {/* Assets List */}
+          <Grid item xs={12}>
+            <Paper sx={{ p: 2 }}>
+              <Typography variant="h6" gutterBottom component="div">
+                Your Assets
+              </Typography>
+              <AssetList assets={mockAssets} />
+            </Paper>
+          </Grid>
+        </Grid>
       </Container>
     </Layout>
   );
 };
-
-export const getServerSideProps = withPageAuthRequired();
 
 export default DashboardPage;
