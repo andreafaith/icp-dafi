@@ -1,161 +1,158 @@
 import React from 'react';
 import {
   Box,
+  Container,
+  Grid,
   Typography,
   Card,
   CardContent,
-  Grid,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
+  LinearProgress,
   Button,
   Chip,
-  LinearProgress,
+  useTheme,
 } from '@mui/material';
-import { Layout } from '@/components/layouts';
+import DashboardNav from '../../components/navigation/DashboardNav';
 
-// Mock investments data
 const mockInvestments = [
   {
     id: 1,
-    farmName: 'Green Valley Farm',
-    amount: 100000,
-    returnRate: 12.5,
-    term: '12 months',
-    status: 'Active',
-    progress: 75,
-    nextPayout: '2024-01-15',
-    risk: 'Low',
+    projectName: "Green Valley Farm",
+    description: "Sustainable farming project focusing on organic vegetables",
+    amountInvested: 50000,
+    targetAmount: 100000,
+    status: "Active",
+    type: "Organic Farming"
   },
   {
     id: 2,
-    farmName: 'Sunrise Orchards',
-    amount: 50000,
-    returnRate: 15.0,
-    term: '6 months',
-    status: 'Pending',
-    progress: 0,
-    nextPayout: '-',
-    risk: 'Medium',
+    projectName: "Sunrise Orchards",
+    description: "Apple and pear orchard expansion project",
+    amountInvested: 75000,
+    targetAmount: 150000,
+    status: "Active",
+    type: "Fruit Farming"
   },
-  // Add more mock investments as needed
+  {
+    id: 3,
+    projectName: "Blue Creek Aquaculture",
+    description: "Sustainable fish farming initiative",
+    amountInvested: 30000,
+    targetAmount: 80000,
+    status: "Pending",
+    type: "Aquaculture"
+  }
 ];
 
-export default function InvestorInvestments() {
-  return (
-    <Layout>
-      <Box sx={{ width: '100%' }}>
-        <Typography variant="h4" sx={{ mb: 4 }}>My Investments</Typography>
+const InvestmentCard = ({ investment }: any) => {
+  const theme = useTheme();
+  const progress = (investment.amountInvested / investment.targetAmount) * 100;
 
-        {/* Investment Summary Cards */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} md={4}>
-            <Card sx={{ bgcolor: '#FFFFFF', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.08)' }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>Total Invested</Typography>
-                <Typography variant="h4">$150,000</Typography>
-              </CardContent>
-            </Card>
+  return (
+    <Card sx={{ height: '100%', '&:hover': { transform: 'translateY(-4px)', transition: 'transform 0.2s' } }}>
+      <CardContent>
+        <Typography variant="h6" gutterBottom>
+          {investment.projectName}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" gutterBottom>
+          {investment.description}
+        </Typography>
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Progress ({progress.toFixed(1)}%)
+          </Typography>
+          <LinearProgress 
+            variant="determinate" 
+            value={progress} 
+            sx={{ 
+              mt: 1, 
+              mb: 2,
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: theme.palette.grey[200],
+              '& .MuiLinearProgress-bar': {
+                borderRadius: 4,
+              }
+            }} 
+          />
+        </Box>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={6}>
+            <Typography variant="body2" color="text.secondary">
+              Invested
+            </Typography>
+            <Typography variant="h6" color="primary">
+              ${investment.amountInvested?.toLocaleString() || '0'}
+            </Typography>
           </Grid>
-          <Grid item xs={12} md={4}>
-            <Card sx={{ bgcolor: '#FFFFFF', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.08)' }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>Total Returns</Typography>
-                <Typography variant="h4">$18,750</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Card sx={{ bgcolor: '#FFFFFF', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.08)' }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>Average ROI</Typography>
-                <Typography variant="h4">13.75%</Typography>
-              </CardContent>
-            </Card>
+          <Grid item xs={6}>
+            <Typography variant="body2" color="text.secondary">
+              Target
+            </Typography>
+            <Typography variant="h6">
+              ${investment.targetAmount?.toLocaleString() || '0'}
+            </Typography>
           </Grid>
         </Grid>
-
-        {/* Investments Table */}
-        <TableContainer component={Paper} sx={{ mb: 4, boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.08)' }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Farm Name</TableCell>
-                <TableCell>Amount</TableCell>
-                <TableCell>Return Rate</TableCell>
-                <TableCell>Term</TableCell>
-                <TableCell>Progress</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Risk Level</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {mockInvestments.map((investment) => (
-                <TableRow key={investment.id}>
-                  <TableCell>{investment.farmName}</TableCell>
-                  <TableCell>${investment.amount.toLocaleString()}</TableCell>
-                  <TableCell>{investment.returnRate}%</TableCell>
-                  <TableCell>{investment.term}</TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Box sx={{ width: '100%', mr: 1 }}>
-                        <LinearProgress variant="determinate" value={investment.progress} />
-                      </Box>
-                      <Box sx={{ minWidth: 35 }}>
-                        <Typography variant="body2" color="text.secondary">
-                          {investment.progress}%
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={investment.status}
-                      color={investment.status === 'Active' ? 'success' : 'warning'}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={investment.risk}
-                      color={
-                        investment.risk === 'Low' ? 'success' :
-                        investment.risk === 'Medium' ? 'warning' : 'error'
-                      }
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => alert(`View details for investment ${investment.id}`)}
-                    >
-                      View Details
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        {/* Find New Investments Button */}
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <Button
-            variant="contained"
-            size="large"
-            onClick={() => alert('Find new investments clicked')}
-          >
-            Find New Investment Opportunities
+        <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+          <Chip 
+            label={investment.status} 
+            color={investment.status === 'Active' ? 'success' : 'default'}
+            size="small"
+          />
+          <Chip 
+            label={investment.type} 
+            variant="outlined"
+            size="small"
+          />
+        </Box>
+        <Box sx={{ mt: 2 }}>
+          <Button variant="contained" fullWidth>
+            View Details
           </Button>
         </Box>
-      </Box>
-    </Layout>
+      </CardContent>
+    </Card>
   );
-}
+};
+
+const InvestorInvestments = () => {
+  const theme = useTheme();
+
+  return (
+    <>
+      <DashboardNav userType="investor" />
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          backgroundColor: theme.palette.grey[50],
+          minHeight: '100vh',
+          pt: 2,
+        }}
+      >
+        <Container maxWidth="lg" sx={{ mt: 2, mb: 4 }}>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h5" gutterBottom>
+                  My Investments
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Track and manage your agricultural investments
+                </Typography>
+              </Box>
+            </Grid>
+
+            {mockInvestments.map((investment) => (
+              <Grid item xs={12} md={6} lg={4} key={investment.id}>
+                <InvestmentCard investment={investment} />
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
+    </>
+  );
+};
+
+export default InvestorInvestments;

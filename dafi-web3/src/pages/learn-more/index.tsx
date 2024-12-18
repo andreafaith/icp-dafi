@@ -5,7 +5,7 @@ import AgricultureIcon from '@mui/icons-material/Agriculture';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import SecurityIcon from '@mui/icons-material/Security';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
-import Layout from '../../components/Layout';
+import { Layout } from '../../components/layout/Layout';
 
 const LearnMore = () => {
   const router = useRouter();

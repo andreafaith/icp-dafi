@@ -1,300 +1,497 @@
 import React from 'react';
 import {
   Box,
+  Container,
+  Grid,
+  Paper,
   Typography,
   Card,
   CardContent,
-  Grid,
-  Tab,
-  Tabs,
   LinearProgress,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  Chip,
 } from '@mui/material';
 import {
-  Timeline,
   TrendingUp,
-  AccountBalance,
   Assessment,
-  PieChart,
   ShowChart,
-  Analytics as AnalyticsIcon,
+  PieChart,
+  Timeline,
+  Agriculture,
+  Eco,
+  MonetizationOn,
 } from '@mui/icons-material';
-import { DashboardLayout } from '@/components/layouts';
+import DashboardNav from '../../components/navigation/DashboardNav';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+} from 'recharts';
 
-// Mock data for investment analytics
-const mockPortfolioData = {
-  totalInvestments: 250000,
-  totalReturns: 45000,
-  roi: 18,
-  portfolioHealth: 92,
-  riskScore: 65,
-};
-
-const mockInvestmentDistribution = [
-  { category: 'Grain Farms', allocation: 35, returns: 22 },
-  { category: 'Dairy Farms', allocation: 25, returns: 18 },
-  { category: 'Organic Farms', allocation: 20, returns: 24 },
-  { category: 'Livestock', allocation: 20, returns: 16 },
+const performanceData = [
+  { month: 'Jan', returns: 15, benchmark: 12 },
+  { month: 'Feb', returns: 18, benchmark: 14 },
+  { month: 'Mar', returns: 22, benchmark: 16 },
+  { month: 'Apr', returns: 25, benchmark: 18 },
+  { month: 'May', returns: 28, benchmark: 20 },
 ];
 
-const mockPerformanceMetrics = {
-  monthlyReturns: [
-    { month: 'Jan', value: 2.5 },
-    { month: 'Feb', value: 3.1 },
-    { month: 'Mar', value: 2.8 },
-    { month: 'Apr', value: 3.4 },
-    { month: 'May', value: 3.7 },
-  ],
-  riskMetrics: {
-    volatility: 12.5,
-    sharpeRatio: 1.8,
-    maxDrawdown: -15,
-  },
-};
-
-const mockActiveFarms = [
-  {
-    name: 'Green Valley Farm',
-    type: 'Organic',
-    investment: 50000,
-    returns: 22,
-    risk: 'Low',
-  },
-  {
-    name: 'Sunrise Dairy',
-    type: 'Dairy',
-    investment: 75000,
-    returns: 18,
-    risk: 'Medium',
-  },
-  {
-    name: 'Golden Grain',
-    type: 'Grain',
-    investment: 60000,
-    returns: 20,
-    risk: 'Low',
-  },
+const riskData = [
+  { subject: 'Market Risk', A: 85, fullMark: 100 },
+  { subject: 'Liquidity Risk', A: 65, fullMark: 100 },
+  { subject: 'Operational Risk', A: 75, fullMark: 100 },
+  { subject: 'Credit Risk', A: 80, fullMark: 100 },
+  { subject: 'Environmental Risk', A: 70, fullMark: 100 },
 ];
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
+const marketTrendData = [
+  { date: '2024-01', value: 1500 },
+  { date: '2024-02', value: 1800 },
+  { date: '2024-03', value: 1600 },
+  { date: '2024-04', value: 2100 },
+  { date: '2024-05', value: 2400 },
+];
 
-const TabPanel: React.FC<TabPanelProps> = ({ children, value, index, ...other }) => {
+const InvestorAnalytics = () => {
   return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`analytics-tabpanel-${index}`}
-      aria-labelledby={`analytics-tab-${index}`}
-      {...other}
+    <Box
+      sx={{
+        backgroundColor: (theme) => theme.palette.grey[100],
+        minHeight: '100vh',
+        pt: 2,
+      }}
     >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          {children}
-        </Box>
-      )}
-    </div>
-  );
-};
+      <DashboardNav userType="investor" />
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          Investment Analytics Dashboard
+        </Typography>
 
-const InvestorAnalytics: React.FC = () => {
-  const [tabValue, setTabValue] = React.useState(0);
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
-
-  return (
-    <DashboardLayout>
-      <Box sx={{ width: '100%' }}>
-        <Typography variant="h4" sx={{ mb: 4 }}>Investment Analytics</Typography>
-
-        {/* Analytics Navigation */}
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-          <Tabs value={tabValue} onChange={handleTabChange} aria-label="analytics tabs">
-            <Tab icon={<PieChart />} label="Portfolio Overview" />
-            <Tab icon={<ShowChart />} label="Performance" />
-            <Tab icon={<Assessment />} label="Risk Analysis" />
-          </Tabs>
-        </Box>
-
-        {/* Portfolio Overview Tab */}
-        <TabPanel value={tabValue} index={0}>
-          <Grid container spacing={3}>
-            {/* Portfolio Summary Cards */}
-            <Grid item xs={12} md={4}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Total Investments</Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <AccountBalance color="primary" />
-                    <Typography variant="h4" sx={{ ml: 1 }}>
-                      ${mockPortfolioData.totalInvestments.toLocaleString()}
-                    </Typography>
-                  </Box>
-                  <Typography color="text.secondary" variant="body2">
-                    Total Returns: ${mockPortfolioData.totalReturns.toLocaleString()}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} md={8}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Investment Distribution</Typography>
-                  <TableContainer>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>Category</TableCell>
-                          <TableCell>Allocation (%)</TableCell>
-                          <TableCell>Returns (%)</TableCell>
-                          <TableCell>Performance</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {mockInvestmentDistribution.map((item) => (
-                          <TableRow key={item.category}>
-                            <TableCell>{item.category}</TableCell>
-                            <TableCell>{item.allocation}%</TableCell>
-                            <TableCell>{item.returns}%</TableCell>
-                            <TableCell>
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Box sx={{ width: '100%', mr: 1 }}>
-                                  <LinearProgress 
-                                    variant="determinate" 
-                                    value={item.returns / 0.3} 
-                                    color={item.returns > 20 ? "success" : "primary"}
-                                  />
-                                </Box>
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </CardContent>
-              </Card>
-            </Grid>
+        {/* Investment Insights */}
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h5" gutterBottom>
+                Portfolio Overview
+              </Typography>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={3}>
+                  <Card>
+                    <CardContent>
+                      <Typography color="textSecondary" gutterBottom>
+                        Total Investment
+                      </Typography>
+                      <Typography variant="h4">$125,000</Typography>
+                      <Typography color="success.main" sx={{ display: 'flex', alignItems: 'center' }}>
+                        <TrendingUp /> +15.3%
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={3}>
+                  <Card>
+                    <CardContent>
+                      <Typography color="textSecondary" gutterBottom>
+                        Current Returns
+                      </Typography>
+                      <Typography variant="h4">18.5%</Typography>
+                      <LinearProgress variant="determinate" value={75} sx={{ mt: 1 }} />
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={3}>
+                  <Card>
+                    <CardContent>
+                      <Typography color="textSecondary" gutterBottom>
+                        Active Farms
+                      </Typography>
+                      <Typography variant="h4">12</Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        Across 5 regions
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={3}>
+                  <Card>
+                    <CardContent>
+                      <Typography color="textSecondary" gutterBottom>
+                        Risk Score
+                      </Typography>
+                      <Typography variant="h4">72/100</Typography>
+                      <Chip label="Moderate Risk" color="warning" size="small" />
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            </Paper>
           </Grid>
-        </TabPanel>
 
-        {/* Performance Tab */}
-        <TabPanel value={tabValue} index={1}>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Active Investments</Typography>
-                  <TableContainer>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>Farm Name</TableCell>
-                          <TableCell>Type</TableCell>
-                          <TableCell>Investment</TableCell>
-                          <TableCell>Returns (%)</TableCell>
-                          <TableCell>Risk Level</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {mockActiveFarms.map((farm) => (
-                          <TableRow key={farm.name}>
-                            <TableCell>{farm.name}</TableCell>
-                            <TableCell>{farm.type}</TableCell>
-                            <TableCell>${farm.investment.toLocaleString()}</TableCell>
-                            <TableCell>{farm.returns}%</TableCell>
-                            <TableCell>
-                              <Box sx={{ 
-                                bgcolor: farm.risk === 'Low' ? 'success.light' : 
-                                        farm.risk === 'Medium' ? 'warning.light' : 'error.light',
-                                px: 2,
-                                py: 0.5,
-                                borderRadius: 1,
-                                display: 'inline-block'
-                              }}>
-                                {farm.risk}
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </CardContent>
-              </Card>
-            </Grid>
+          {/* Performance Metrics */}
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Performance Metrics
+              </Typography>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={performanceData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="returns" stroke="#8884d8" name="Your Returns" />
+                  <Line type="monotone" dataKey="benchmark" stroke="#82ca9d" name="Benchmark" />
+                </LineChart>
+              </ResponsiveContainer>
+              <List>
+                <ListItem>
+                  <ListItemText 
+                    primary="Annual Return Rate" 
+                    secondary="18.5% (3.2% above market average)"
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText 
+                    primary="Monthly Growth" 
+                    secondary="2.3% average monthly increase"
+                  />
+                </ListItem>
+              </List>
+            </Paper>
           </Grid>
-        </TabPanel>
 
-        {/* Risk Analysis Tab */}
-        <TabPanel value={tabValue} index={2}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Risk Metrics</Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                      <Typography variant="subtitle2" color="text.secondary">
-                        Portfolio Volatility
-                      </Typography>
-                      <Typography variant="h4">
-                        {mockPerformanceMetrics.riskMetrics.volatility}%
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="subtitle2" color="text.secondary">
-                        Sharpe Ratio
-                      </Typography>
-                      <Typography variant="h4">
-                        {mockPerformanceMetrics.riskMetrics.sharpeRatio}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Portfolio Health</Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-                    <Box sx={{ width: '100%', mr: 1 }}>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={mockPortfolioData.portfolioHealth} 
-                        color="success"
-                        sx={{ height: 10, borderRadius: 5 }}
-                      />
-                    </Box>
-                    <Box sx={{ minWidth: 35 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        {mockPortfolioData.portfolioHealth}%
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    Based on diversification, returns, and risk metrics
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
+          {/* Risk Analysis */}
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Risk Analysis
+              </Typography>
+              <ResponsiveContainer width="100%" height={300}>
+                <RadarChart data={riskData}>
+                  <PolarGrid />
+                  <PolarAngleAxis dataKey="subject" />
+                  <PolarRadiusAxis />
+                  <Radar name="Risk Metrics" dataKey="A" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                </RadarChart>
+              </ResponsiveContainer>
+              <List>
+                <ListItem>
+                  <ListItemText 
+                    primary="Portfolio Volatility" 
+                    secondary="Low - Beta: 0.85"
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText 
+                    primary="Diversification Score" 
+                    secondary="85/100 - Well diversified across sectors"
+                  />
+                </ListItem>
+              </List>
+            </Paper>
           </Grid>
-        </TabPanel>
-      </Box>
-    </DashboardLayout>
+
+          {/* Market Intelligence */}
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Market Intelligence
+              </Typography>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={marketTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Area type="monotone" dataKey="value" stroke="#82ca9d" fill="#82ca9d" />
+                </AreaChart>
+              </ResponsiveContainer>
+              <Grid container spacing={3} sx={{ mt: 2 }}>
+                <Grid item xs={12} md={4}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        Market Trends
+                      </Typography>
+                      <List>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Organic Farming" 
+                            secondary="+25% YoY Growth"
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Sustainable Agriculture" 
+                            secondary="Rising Demand"
+                          />
+                        </ListItem>
+                      </List>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        Commodity Prices
+                      </Typography>
+                      <List>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Wheat" 
+                            secondary="$320/ton (+5%)"
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Corn" 
+                            secondary="$180/ton (+2%)"
+                          />
+                        </ListItem>
+                      </List>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        Market Forecasts
+                      </Typography>
+                      <List>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Q1 2024 Outlook" 
+                            secondary="Positive Growth Expected"
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Key Opportunities" 
+                            secondary="Organic Farming, Vertical Farming"
+                          />
+                        </ListItem>
+                      </List>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
+
+          {/* Farm Performance */}
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Farm Performance
+              </Typography>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        Yield Analysis
+                      </Typography>
+                      <List>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Average Yield" 
+                            secondary="4.8 tons/hectare"
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Year-over-Year Growth" 
+                            secondary="+12% improvement"
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Quality Rating" 
+                            secondary="A+ (Premium Grade)"
+                          />
+                        </ListItem>
+                      </List>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        Operational Efficiency
+                      </Typography>
+                      <List>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Resource Utilization" 
+                            secondary="92% efficiency"
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Cost per Hectare" 
+                            secondary="$2,800 (-5% YoY)"
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Labor Productivity" 
+                            secondary="15% above industry average"
+                          />
+                        </ListItem>
+                      </List>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        Sustainability Score
+                      </Typography>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} md={4}>
+                          <Typography variant="subtitle1">Water Usage</Typography>
+                          <LinearProgress variant="determinate" value={85} sx={{ mb: 2 }} />
+                          <Typography variant="body2">15% reduction in water consumption</Typography>
+                        </Grid>
+                        <Grid item xs={12} md={4}>
+                          <Typography variant="subtitle1">Carbon Footprint</Typography>
+                          <LinearProgress variant="determinate" value={75} sx={{ mb: 2 }} />
+                          <Typography variant="body2">25% below industry average</Typography>
+                        </Grid>
+                        <Grid item xs={12} md={4}>
+                          <Typography variant="subtitle1">Soil Health</Typography>
+                          <LinearProgress variant="determinate" value={90} sx={{ mb: 2 }} />
+                          <Typography variant="body2">Excellent soil quality maintenance</Typography>
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
+
+          {/* Investment Opportunities */}
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Investment Opportunities
+              </Typography>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={4}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" color="primary" gutterBottom>
+                        Featured Farm Listing
+                      </Typography>
+                      <Typography variant="subtitle1">Organic Valley Farm</Typography>
+                      <List>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Investment Required" 
+                            secondary="$50,000"
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Expected ROI" 
+                            secondary="22% (3 years)"
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Risk Level" 
+                            secondary="Low-Medium"
+                          />
+                        </ListItem>
+                      </List>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" color="primary" gutterBottom>
+                        Due Diligence Report
+                      </Typography>
+                      <List>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Financial Health" 
+                            secondary="Strong (A+ Rating)"
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Management Score" 
+                            secondary="95/100"
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Market Position" 
+                            secondary="Top 10% in Region"
+                          />
+                        </ListItem>
+                      </List>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" color="primary" gutterBottom>
+                        ROI Projections
+                      </Typography>
+                      <List>
+                        <ListItem>
+                          <ListItemText 
+                            primary="1 Year Projection" 
+                            secondary="12-15% Returns"
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="3 Year Projection" 
+                            secondary="40-45% Returns"
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Payback Period" 
+                            secondary="2.5 Years"
+                          />
+                        </ListItem>
+                      </List>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
+        </Grid>
+      </Container>
+    </Box>
   );
 };
 

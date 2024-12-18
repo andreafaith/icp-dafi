@@ -1,335 +1,368 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
-  Typography,
-  Card,
-  CardContent,
+  Container,
   Grid,
+  Typography,
+  Paper,
   Switch,
   FormControlLabel,
   Button,
-  Divider,
   TextField,
+  Divider,
+  Card,
+  CardContent,
   Select,
   MenuItem,
-  FormControl,
   InputLabel,
+  FormControl,
+  Alert,
   Slider,
+  IconButton,
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
   Security as SecurityIcon,
-  Language as LanguageIcon,
-  AccountBalance as AccountIcon,
-  TrendingUp as InvestmentIcon,
+  AccountBalance as AccountBalanceIcon,
+  Settings as SettingsIcon,
+  Edit as EditIcon,
+  Save as SaveIcon,
+  Cancel as CancelIcon,
 } from '@mui/icons-material';
-import { Layout } from '@/components/Layout';
+import DashboardNav from '../../components/navigation/DashboardNav';
 
-// Mock settings data
-const mockSettings = {
-  notifications: {
-    emailAlerts: true,
-    smsAlerts: false,
-    investmentUpdates: true,
-    marketingEmails: false,
-    performanceReports: true,
-  },
-  security: {
-    twoFactorAuth: true,
-    sessionTimeout: '30',
-    loginNotifications: true,
-    transactionVerification: true,
-  },
-  preferences: {
-    language: 'English',
-    currency: 'USD',
-    timezone: 'UTC-8',
-  },
-  payment: {
-    defaultAccount: '**** **** **** 5678',
-    bankName: 'Wells Fargo',
-    accountType: 'Investment',
-  },
-  investment: {
+const InvestorSettings = () => {
+  const [notifications, setNotifications] = useState({
+    email: true,
+    push: true,
+    investment: true,
+    market: true,
+    performance: true,
+  });
+
+  const [security, setSecurity] = useState({
+    twoFactor: true,
+    biometric: false,
+  });
+
+  const [investment, setInvestment] = useState({
     autoInvest: false,
-    minInvestmentAmount: 10000,
-    maxInvestmentAmount: 50000,
-    riskTolerance: 70,
-    preferredSectors: ['Agriculture', 'Sustainable Farming'],
-  },
-};
+    riskTolerance: 50,
+    minInvestment: 1000,
+    maxInvestment: 10000,
+    preferredSectors: ['Organic Farming', 'Sustainable Agriculture'],
+  });
 
-export default function InvestorSettings() {
-  const [settings, setSettings] = React.useState(mockSettings);
+  const [profile, setProfile] = useState({
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+    phone: '+1 234 567 8900',
+    address: '123 Investment Street, Financial District',
+    isEditing: false,
+  });
 
-  const handleNotificationChange = (setting: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSettings(prev => ({
-      ...prev,
-      notifications: {
-        ...prev.notifications,
-        [setting]: event.target.checked,
-      },
-    }));
+  const handleNotificationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNotifications({
+      ...notifications,
+      [event.target.name]: event.target.checked,
+    });
+  };
+
+  const handleSecurityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSecurity({
+      ...security,
+      [event.target.name]: event.target.checked,
+    });
+  };
+
+  const handleInvestmentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setInvestment({
+      ...investment,
+      [event.target.name]: event.target.type === 'checkbox' ? event.target.checked : event.target.value,
+    });
+  };
+
+  const handleProfileEdit = () => {
+    setProfile({ ...profile, isEditing: !profile.isEditing });
+  };
+
+  const handleProfileSave = () => {
+    setProfile({ ...profile, isEditing: false });
   };
 
   return (
-    <Layout>
-      <Box sx={{ width: '100%' }}>
-        <Typography variant="h4" sx={{ mb: 4 }}>Settings</Typography>
-
+    <Box
+      component="main"
+      sx={{
+        flexGrow: 1,
+        backgroundColor: '#FDF5E6', // Cream color (Old Lace)
+        minHeight: '100vh',
+        pt: 2,
+      }}
+    >
+      <DashboardNav userType="investor" />
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Grid container spacing={3}>
-          {/* Notifications Settings */}
+          <Grid item xs={12}>
+            <Typography variant="h4" gutterBottom>
+              Settings
+            </Typography>
+          </Grid>
+
+          {/* Profile Section */}
           <Grid item xs={12} md={6}>
-            <Card sx={{ bgcolor: '#FFFFFF', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.08)' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <NotificationsIcon sx={{ mr: 1 }} />
-                  <Typography variant="h6">Notifications</Typography>
-                </Box>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={settings.notifications.emailAlerts}
-                      onChange={handleNotificationChange('emailAlerts')}
-                    />
-                  }
-                  label="Email Alerts"
-                />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={settings.notifications.smsAlerts}
-                      onChange={handleNotificationChange('smsAlerts')}
-                    />
-                  }
-                  label="SMS Alerts"
-                />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={settings.notifications.investmentUpdates}
-                      onChange={handleNotificationChange('investmentUpdates')}
-                    />
-                  }
-                  label="Investment Updates"
-                />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={settings.notifications.performanceReports}
-                      onChange={handleNotificationChange('performanceReports')}
-                    />
-                  }
-                  label="Performance Reports"
-                />
-              </CardContent>
-            </Card>
+            <Paper sx={{ p: 3, mb: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6">
+                  Profile Information
+                </Typography>
+                <IconButton onClick={handleProfileEdit}>
+                  {profile.isEditing ? <SaveIcon /> : <EditIcon />}
+                </IconButton>
+              </Box>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Name"
+                    value={profile.name}
+                    disabled={!profile.isEditing}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    value={profile.email}
+                    disabled={!profile.isEditing}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Phone"
+                    value={profile.phone}
+                    disabled={!profile.isEditing}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Address"
+                    value={profile.address}
+                    disabled={!profile.isEditing}
+                    multiline
+                    rows={2}
+                  />
+                </Grid>
+              </Grid>
+            </Paper>
           </Grid>
 
           {/* Security Settings */}
           <Grid item xs={12} md={6}>
-            <Card sx={{ bgcolor: '#FFFFFF', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.08)' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <SecurityIcon sx={{ mr: 1 }} />
-                  <Typography variant="h6">Security</Typography>
-                </Box>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={settings.security.twoFactorAuth}
-                      onChange={() => {}}
-                    />
-                  }
-                  label="Two-Factor Authentication"
-                />
-                <Box sx={{ mt: 2 }}>
-                  <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
-                    <InputLabel>Session Timeout (minutes)</InputLabel>
-                    <Select
-                      value={settings.security.sessionTimeout}
-                      label="Session Timeout (minutes)"
-                    >
-                      <MenuItem value="15">15 minutes</MenuItem>
-                      <MenuItem value="30">30 minutes</MenuItem>
-                      <MenuItem value="60">1 hour</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Box>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={settings.security.transactionVerification}
-                      onChange={() => {}}
-                    />
-                  }
-                  label="Transaction Verification"
-                />
-              </CardContent>
-            </Card>
+            <Paper sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Security Settings
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={security.twoFactor}
+                        onChange={handleSecurityChange}
+                        name="twoFactor"
+                      />
+                    }
+                    label="Two-Factor Authentication"
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={security.biometric}
+                        onChange={handleSecurityChange}
+                        name="biometric"
+                      />
+                    }
+                    label="Biometric Login"
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Button variant="outlined" color="primary" startIcon={<SecurityIcon />}>
+                    Change Password
+                  </Button>
+                </Grid>
+              </Grid>
+            </Paper>
           </Grid>
 
           {/* Investment Preferences */}
-          <Grid item xs={12} md={6}>
-            <Card sx={{ bgcolor: '#FFFFFF', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.08)' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <InvestmentIcon sx={{ mr: 1 }} />
-                  <Typography variant="h6">Investment Preferences</Typography>
-                </Box>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={settings.investment.autoInvest}
-                      onChange={() => {}}
-                    />
-                  }
-                  label="Auto-Invest"
-                />
-                <Box sx={{ mt: 3 }}>
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Investment Preferences
+              </Typography>
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={investment.autoInvest}
+                        onChange={handleInvestmentChange}
+                        name="autoInvest"
+                      />
+                    }
+                    label="Auto-Invest"
+                  />
+                </Grid>
+                <Grid item xs={12}>
                   <Typography gutterBottom>Risk Tolerance</Typography>
                   <Slider
-                    value={settings.investment.riskTolerance}
+                    value={investment.riskTolerance}
                     valueLabelDisplay="auto"
                     step={10}
                     marks
                     min={0}
                     max={100}
+                    onChange={(e, value) => setInvestment({ ...investment, riskTolerance: value as number })}
                   />
-                </Box>
-                <Box sx={{ mt: 3 }}>
-                  <Typography gutterBottom>Investment Range ($)</Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                      <TextField
-                        fullWidth
-                        label="Minimum"
-                        type="number"
-                        value={settings.investment.minInvestmentAmount}
-                      />
-                    </Grid>
-                    <Grid item xs={6}>
-                      <TextField
-                        fullWidth
-                        label="Maximum"
-                        type="number"
-                        value={settings.investment.maxInvestmentAmount}
-                      />
-                    </Grid>
-                  </Grid>
-                </Box>
-                <Box sx={{ mt: 3 }}>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Minimum Investment ($)"
+                    type="number"
+                    value={investment.minInvestment}
+                    onChange={handleInvestmentChange}
+                    name="minInvestment"
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Maximum Investment ($)"
+                    type="number"
+                    value={investment.maxInvestment}
+                    onChange={handleInvestmentChange}
+                    name="maxInvestment"
+                  />
+                </Grid>
+                <Grid item xs={12}>
                   <FormControl fullWidth>
-                    <InputLabel>Preferred Sectors</InputLabel>
+                    <InputLabel>Preferred Investment Sectors</InputLabel>
                     <Select
                       multiple
-                      value={settings.investment.preferredSectors}
-                      label="Preferred Sectors"
+                      value={investment.preferredSectors}
+                      onChange={(e) => setInvestment({ ...investment, preferredSectors: e.target.value as string[] })}
+                      renderValue={(selected) => (selected as string[]).join(', ')}
                     >
-                      <MenuItem value="Agriculture">Agriculture</MenuItem>
-                      <MenuItem value="Sustainable Farming">Sustainable Farming</MenuItem>
                       <MenuItem value="Organic Farming">Organic Farming</MenuItem>
+                      <MenuItem value="Sustainable Agriculture">Sustainable Agriculture</MenuItem>
                       <MenuItem value="Livestock">Livestock</MenuItem>
+                      <MenuItem value="Dairy Farming">Dairy Farming</MenuItem>
+                      <MenuItem value="Grain Production">Grain Production</MenuItem>
                     </Select>
                   </FormControl>
-                </Box>
-              </CardContent>
-            </Card>
+                </Grid>
+              </Grid>
+            </Paper>
           </Grid>
 
-          {/* Payment Settings */}
-          <Grid item xs={12} md={6}>
-            <Card sx={{ bgcolor: '#FFFFFF', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.08)' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <AccountIcon sx={{ mr: 1 }} />
-                  <Typography variant="h6">Payment Settings</Typography>
-                </Box>
-                <TextField
-                  fullWidth
-                  label="Default Account"
-                  value={settings.payment.defaultAccount}
-                  disabled
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Bank Name"
-                  value={settings.payment.bankName}
-                  disabled
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Account Type"
-                  value={settings.payment.accountType}
-                  disabled
-                  sx={{ mb: 2 }}
-                />
-                <Button variant="outlined" color="primary">
-                  Update Payment Information
-                </Button>
-              </CardContent>
-            </Card>
+          {/* Notification Settings */}
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Notification Preferences
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={notifications.email}
+                        onChange={handleNotificationChange}
+                        name="email"
+                      />
+                    }
+                    label="Email Notifications"
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={notifications.push}
+                        onChange={handleNotificationChange}
+                        name="push"
+                      />
+                    }
+                    label="Push Notifications"
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Divider />
+                  <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
+                    Notification Types
+                  </Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={notifications.investment}
+                        onChange={handleNotificationChange}
+                        name="investment"
+                      />
+                    }
+                    label="Investment Updates"
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={notifications.market}
+                        onChange={handleNotificationChange}
+                        name="market"
+                      />
+                    }
+                    label="Market Alerts"
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={notifications.performance}
+                        onChange={handleNotificationChange}
+                        name="performance"
+                      />
+                    }
+                    label="Performance Reports"
+                  />
+                </Grid>
+              </Grid>
+            </Paper>
           </Grid>
 
-          {/* General Preferences */}
-          <Grid item xs={12} md={6}>
-            <Card sx={{ bgcolor: '#FFFFFF', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.08)' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <LanguageIcon sx={{ mr: 1 }} />
-                  <Typography variant="h6">General Preferences</Typography>
-                </Box>
-                <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
-                  <InputLabel>Language</InputLabel>
-                  <Select
-                    value={settings.preferences.language}
-                    label="Language"
-                  >
-                    <MenuItem value="English">English</MenuItem>
-                    <MenuItem value="Spanish">Spanish</MenuItem>
-                    <MenuItem value="French">French</MenuItem>
-                  </Select>
-                </FormControl>
-                <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
-                  <InputLabel>Currency</InputLabel>
-                  <Select
-                    value={settings.preferences.currency}
-                    label="Currency"
-                  >
-                    <MenuItem value="USD">USD ($)</MenuItem>
-                    <MenuItem value="EUR">EUR (€)</MenuItem>
-                    <MenuItem value="GBP">GBP (£)</MenuItem>
-                  </Select>
-                </FormControl>
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>Timezone</InputLabel>
-                  <Select
-                    value={settings.preferences.timezone}
-                    label="Timezone"
-                  >
-                    <MenuItem value="UTC-8">Pacific Time (UTC-8)</MenuItem>
-                    <MenuItem value="UTC-5">Eastern Time (UTC-5)</MenuItem>
-                    <MenuItem value="UTC+0">UTC</MenuItem>
-                  </Select>
-                </FormControl>
-              </CardContent>
-            </Card>
+          {/* Save Button */}
+          <Grid item xs={12}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+              <Button variant="outlined" startIcon={<CancelIcon />}>
+                Cancel
+              </Button>
+              <Button variant="contained" startIcon={<SaveIcon />}>
+                Save Changes
+              </Button>
+            </Box>
           </Grid>
         </Grid>
-
-        {/* Save Button */}
-        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-          <Button
-            variant="contained"
-            size="large"
-            onClick={() => alert('Settings saved!')}
-          >
-            Save Settings
-          </Button>
-        </Box>
-      </Box>
-    </Layout>
+      </Container>
+    </Box>
   );
-}
+};
+
+export default InvestorSettings;

@@ -6,12 +6,10 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <DashboardLayout>
       {children}
     </DashboardLayout>
   );
 };
-
-export default Layout;

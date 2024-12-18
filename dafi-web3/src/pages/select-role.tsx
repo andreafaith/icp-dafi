@@ -1,18 +1,30 @@
 import React from 'react';
 import { Box, Container, Typography, Button, Card, CardContent } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
-import { Layout } from '../components/Layout';
+import { Layout } from '../components/layout/Layout';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
 
 const SelectRolePage = () => {
-  const { setRole } = useAuth();
+  const { setRole, isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/');
+    }
+  }, [isAuthenticated, router]);
 
   return (
     <Layout>
       <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Typography variant="h2" align="center" sx={{ mb: 6, color: 'white' }}>
+        <Typography variant="h2" align="center" gutterBottom>
           Choose Your Role
         </Typography>
+        <Typography variant="h6" align="center" color="text.secondary" sx={{ mb: 6 }}>
+          Select how you want to participate in DaFi
+        </Typography>
+        
         <Box sx={{ display: 'flex', gap: 4, flexWrap: { xs: 'wrap', md: 'nowrap' } }}>
           {/* Farmer Card */}
           <Card sx={{ 
@@ -47,20 +59,16 @@ const SelectRolePage = () => {
                 variant="contained" 
                 size="large"
                 onClick={() => setRole('farmer')}
-                sx={{
-                  mt: 2,
-                  backgroundColor: '#2E7D32',
-                  '&:hover': { backgroundColor: '#1B5E20' },
-                }}
+                fullWidth
               >
-                Join as Farmer
+                Continue as Farmer
               </Button>
             </CardContent>
           </Card>
 
           {/* Investor Card */}
           <Card sx={{ 
-            flex: 1,
+            flex: 1, 
             minWidth: { xs: '100%', md: '45%' },
             cursor: 'pointer',
             transition: 'transform 0.2s',
@@ -85,19 +93,15 @@ const SelectRolePage = () => {
                 Investor
               </Typography>
               <Typography variant="body1" color="text.secondary" align="center">
-                Invest in agricultural assets and earn returns from farm operations
+                Invest in verified agricultural projects and earn returns
               </Typography>
               <Button 
                 variant="contained" 
                 size="large"
                 onClick={() => setRole('investor')}
-                sx={{
-                  mt: 2,
-                  backgroundColor: '#2E7D32',
-                  '&:hover': { backgroundColor: '#1B5E20' },
-                }}
+                fullWidth
               >
-                Join as Investor
+                Continue as Investor
               </Button>
             </CardContent>
           </Card>

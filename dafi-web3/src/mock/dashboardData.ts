@@ -1,7 +1,7 @@
 export const mockFarmerData = {
   profile: {
-    name: "John Farmer",
-    location: "Central Valley, CA",
+    name: "Juan Dela Cruz",
+    location: "Bulacan, Philippines",
     farmSize: "250 acres",
     mainCrops: ["Corn", "Soybeans", "Wheat"],
     rating: 4.8,

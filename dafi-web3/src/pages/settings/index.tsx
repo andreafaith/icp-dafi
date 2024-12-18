@@ -19,7 +19,7 @@ import {
   InputLabel,
   FormControl,
 } from '@mui/material';
-import { Layout } from '../../components/Layout';
+import { Layout } from '../../components/layout/Layout';
 import {
   Notifications as NotificationsIcon,
   Security as SecurityIcon,

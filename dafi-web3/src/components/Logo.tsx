@@ -1,41 +1,26 @@
 import React from 'react';
-import { Box } from '@mui/material';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { Box } from '@mui/material';
 
 interface LogoProps {
   width?: number;
   height?: number;
 }
 
-const Logo: React.FC<LogoProps> = ({ width = 180, height = 70 }) => {
+const Logo: React.FC<LogoProps> = ({ width = 120, height = 40 }: LogoProps) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          mb: 4,
-          mt: 2,
+    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <Image
+        src="/images/logo-white.svg"
+        alt="DaFi Logo"
+        width={width}
+        height={height}
+        style={{
+          maxWidth: '100%',
+          height: 'auto'
         }}
-      >
-        <Image
-          src="/images/logo-night.svg"
-          alt="DAFI Logo"
-          width={width}
-          height={height}
-          priority
-          style={{
-            filter: 'drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.15))',
-          }}
-        />
-      </Box>
-    </motion.div>
+      />
+    </Box>
   );
 };
 

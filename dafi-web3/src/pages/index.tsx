@@ -1,8 +1,6 @@
-import React, { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import React from 'react';
 import { Box, Container, Grid, Typography, useTheme } from '@mui/material';
 import { MainLayout } from '../components/common/MainLayout';
-import { useAuth } from '../contexts/AuthContext';
 import HeroSection from '../components/common/HeroSection';
 import Stats from '../components/common/Stats';
 import TimelineSection from '../components/common/Timeline';
@@ -14,19 +12,6 @@ import FeatureCard from '../components/common/FeatureCard';
 
 const HomePage = () => {
   const theme = useTheme();
-  const { isAuthenticated, userRole, login } = useAuth();
-  const router = useRouter();
-  
-  useEffect(() => {
-    // If authenticated and has role, redirect to appropriate page
-    if (isAuthenticated && userRole) {
-      router.push(userRole === 'farmer' ? '/farms' : '/invest');
-    }
-    // If authenticated but no role, redirect to role selection
-    else if (isAuthenticated && !userRole) {
-      router.push('/select-role');
-    }
-  }, [isAuthenticated, userRole, router]);
 
   const features = [
     {
@@ -57,17 +42,17 @@ const HomePage = () => {
 
   return (
     <MainLayout>
-      <Box sx={{ pt: 8 }}> 
+      <Box sx={{ pt: 8 }}>
         <HeroSection
           title="Revolutionizing Agricultural Investment"
           subtitle="Connect farmers with investors through blockchain technology, enabling secure and transparent agricultural investments."
           primaryAction={{
             label: "Get Started",
-            onClick: () => router.push('/login')
+            onClick: () => null
           }}
           secondaryAction={{
             label: "Learn More",
-            onClick: () => router.push('/about')
+            onClick: () => null
           }}
           imagePath="/images/hero-image.jpg"
           imageAlt="Agricultural Investment"
@@ -208,7 +193,7 @@ const HomePage = () => {
                   title="Ready to Transform Agriculture?"
                   description="Join DAFI Platform today and be part of the agricultural revolution"
                   buttonText="Connect Wallet"
-                  onButtonClick={login}
+                  onButtonClick={() => null}
                 />
               </Grid>
             </Grid>

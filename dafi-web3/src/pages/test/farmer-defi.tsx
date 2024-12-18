@@ -1,66 +1,26 @@
 import React, { useState } from 'react';
-import { GetServerSideProps } from 'next';
 import {
-  Container,
-  Typography,
   Box,
+  Container,
+  Grid,
+  Paper,
+  Typography,
   Tabs,
   Tab,
-  Alert,
-  CircularProgress,
 } from '@mui/material';
-import Layout from '../../components/layout/Layout';
+import DashboardNav from '../../components/navigation/DashboardNav';
 import TokenManagement from '../../components/defi/TokenManagement';
 import LiquidityPool from '../../components/defi/LiquidityPool';
 import Staking from '../../components/defi/Staking';
 import Governance from '../../components/defi/Governance';
 import DefiAnalytics from '../../components/defi/DefiAnalytics';
-import { useAuth } from '../../context/AuthContext';
-import { withPageAuthRequired } from '../../utils/auth';
 
-const DeFiPage: React.FC = () => {
-  const { isAuthenticated, isLoading, error } = useAuth();
+const FarmerDefi = () => {
   const [activeTab, setActiveTab] = useState(0);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
-
-  if (isLoading) {
-    return (
-      <Layout>
-        <Container>
-          <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-            <CircularProgress />
-          </Box>
-        </Container>
-      </Layout>
-    );
-  }
-
-  if (error) {
-    return (
-      <Layout>
-        <Container>
-          <Alert severity="error" sx={{ mt: 4 }}>
-            {error}
-          </Alert>
-        </Container>
-      </Layout>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <Layout>
-        <Container>
-          <Alert severity="warning" sx={{ mt: 4 }}>
-            Please login to access DeFi features
-          </Alert>
-        </Container>
-      </Layout>
-    );
-  }
 
   const renderContent = () => {
     switch (activeTab) {
@@ -80,13 +40,22 @@ const DeFiPage: React.FC = () => {
   };
 
   return (
-    <Layout>
-      <Container>
-        <Box sx={{ mt: 4, mb: 4 }}>
-          <Typography variant="h4" gutterBottom>
-            DeFi Platform
+    <Box
+      component="main"
+      sx={{
+        backgroundColor: theme => theme.palette.grey[100],
+        flexGrow: 1,
+        height: '100vh',
+        overflow: 'auto',
+      }}
+    >
+      <DashboardNav userType="farmer" />
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h5" gutterBottom>
+            Farmer DeFi Dashboard
           </Typography>
-
+          
           <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
             <Tabs value={activeTab} onChange={handleTabChange}>
               <Tab label="Token Management" />
@@ -98,12 +67,10 @@ const DeFiPage: React.FC = () => {
           </Box>
 
           {renderContent()}
-        </Box>
+        </Paper>
       </Container>
-    </Layout>
+    </Box>
   );
 };
 
-export const getServerSideProps: GetServerSideProps = withPageAuthRequired();
-
-export default DeFiPage;
+export default FarmerDefi;

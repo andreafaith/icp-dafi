@@ -8,14 +8,23 @@ import {
   useTheme,
   alpha,
   useScrollTrigger,
+  IconButton,
+  Menu,
+  MenuItem,
 } from '@mui/material';
-import Image from 'next/image';
+import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { useAuth } from '../../contexts/AuthContext';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import PersonIcon from '@mui/icons-material/Person';
+import Logo from '../Logo';
 
 export const MainNavigation = () => {
   const theme = useTheme();
+  const router = useRouter();
+  const { isAuthenticated, userRole, login, logout } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const trigger = useScrollTrigger({
     disableHysteresis: true,
@@ -30,9 +39,28 @@ export const MainNavigation = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleConnectWallet = () => {
-    // TODO: Implement wallet connection
-    console.log('Connect wallet clicked');
+  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleDashboard = () => {
+    handleClose();
+    if (userRole === 'farmer') {
+      router.push('/test/farmer-dashboard');
+    } else if (userRole === 'investor') {
+      router.push('/test/investor-dashboard');
+    } else {
+      router.push('/get-started');
+    }
+  };
+
+  const handleLogout = () => {
+    handleClose();
+    logout();
   };
 
   return (
@@ -48,99 +76,60 @@ export const MainNavigation = () => {
       }}
     >
       <Container maxWidth="xl">
-        <Toolbar disableGutters>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              flexGrow: 1,
-            }}
-          >
-            <Link 
-              href="/"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                textDecoration: 'none',
-              }}
-            >
-              <Image
-                src={isScrolled ? "/images/logo-white.svg" : "/images/logo-night.svg"}
-                alt="DaFi Logo"
-                width={60}
-                height={60}
-                priority
-              />
-            </Link>
-          </Box>
-          <Box
-            sx={{
-              display: 'flex',
-              gap: 2,
-              alignItems: 'center',
-              '& a': {
-                textDecoration: 'none',
-              }
-            }}
-          >
-            <Link href="/farmers" passHref>
-              <Button 
-                sx={{ 
-                  color: isScrolled 
-                    ? theme.palette.text.primary 
-                    : theme.palette.common.white,
+        <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
+          <Link href="/" passHref>
+            <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+              <Logo width={120} height={40} />
+            </Box>
+          </Link>
+
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            {!isAuthenticated ? (
+              <Button
+                variant="contained"
+                startIcon={<AccountBalanceWalletIcon />}
+                onClick={login}
+                sx={{
+                  backgroundColor: theme.palette.primary.main,
+                  color: 'white',
                   '&:hover': {
-                    bgcolor: alpha(theme.palette.primary.main, 0.08),
-                  }
+                    backgroundColor: theme.palette.primary.dark,
+                  },
                 }}
               >
-                Farmers
+                Connect Wallet
               </Button>
-            </Link>
-            <Link href="/investors" passHref>
-              <Button 
-                sx={{ 
-                  color: isScrolled 
-                    ? theme.palette.text.primary 
-                    : theme.palette.common.white,
-                  '&:hover': {
-                    bgcolor: alpha(theme.palette.primary.main, 0.08),
-                  }
-                }}
-              >
-                Investors
-              </Button>
-            </Link>
-            <Link href="/about" passHref>
-              <Button 
-                sx={{ 
-                  color: isScrolled 
-                    ? theme.palette.text.primary 
-                    : theme.palette.common.white,
-                  '&:hover': {
-                    bgcolor: alpha(theme.palette.primary.main, 0.08),
-                  }
-                }}
-              >
-                About
-              </Button>
-            </Link>
-            <Button 
-              variant="contained"
-              startIcon={<AccountBalanceWalletIcon />}
-              onClick={handleConnectWallet}
-              sx={{ 
-                background: 'linear-gradient(45deg, #2E5B2E 30%, #4CAF50 90%)',
-                boxShadow: isScrolled 
-                  ? '0 4px 12px rgba(76, 175, 80, 0.2)'
-                  : 'none',
-                '&:hover': {
-                  background: 'linear-gradient(45deg, #1F3F1F 30%, #388E3C 90%)',
-                }
-              }}
-            >
-              Connect Wallet
-            </Button>
+            ) : (
+              <>
+                <Button
+                  variant="contained"
+                  onClick={handleDashboard}
+                  sx={{
+                    backgroundColor: theme.palette.primary.main,
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: theme.palette.primary.dark,
+                    },
+                  }}
+                >
+                  Dashboard
+                </Button>
+                <IconButton
+                  onClick={handleMenu}
+                  sx={{ color: theme.palette.primary.main }}
+                >
+                  <PersonIcon />
+                </IconButton>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleClose}
+                >
+                  <MenuItem onClick={handleDashboard}>Dashboard</MenuItem>
+                  <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                </Menu>
+              </>
+            )}
           </Box>
         </Toolbar>
       </Container>

@@ -1,207 +1,324 @@
 import React from 'react';
 import {
+  Box,
   Container,
   Grid,
   Paper,
   Typography,
-  Box,
   Card,
   CardContent,
+  Button,
   List,
   ListItem,
   ListItemText,
-  Divider,
-  Button,
   LinearProgress,
   Chip,
+  Avatar,
+  IconButton,
+  Divider,
 } from '@mui/material';
 import {
-  AccountBalance,
   TrendingUp,
+  TrendingDown,
+  Agriculture,
+  MonetizationOn,
   Assessment,
-  SwapHoriz,
+  Notifications,
+  MoreVert,
+  AccountBalance,
+  Timeline,
+  PieChart,
 } from '@mui/icons-material';
-import Layout from '../../components/layout/Layout';
-import { mockInvestorData } from '../../mock/dashboardData';
+import DashboardNav from '../../components/navigation/DashboardNav';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  PieChart as RechartsPieChart,
+  Pie,
+  Cell,
+  Legend,
+} from 'recharts';
 
-const StatCard = ({ title, value, icon, suffix = '' }: { title: string; value: string | number; icon: React.ReactNode; suffix?: string }) => (
-  <Card sx={{ height: '100%' }}>
-    <CardContent>
-      <Box display="flex" alignItems="center" mb={2}>
-        {icon}
-        <Typography variant="h6" component="div" sx={{ ml: 1 }}>
-          {title}
-        </Typography>
-      </Box>
-      <Typography variant="h4" component="div">
-        {typeof value === 'number' && !suffix ? '$' : ''}{value}{suffix}
-      </Typography>
-    </CardContent>
-  </Card>
-);
+const performanceData = [
+  { month: 'Jan', returns: 15, benchmark: 12 },
+  { month: 'Feb', returns: 18, benchmark: 14 },
+  { month: 'Mar', returns: 22, benchmark: 16 },
+  { month: 'Apr', returns: 25, benchmark: 18 },
+  { month: 'May', returns: 28, benchmark: 20 },
+];
 
-const OpportunityCard = ({ opportunity }: { opportunity: any }) => (
-  <Paper sx={{ p: 2, mb: 2 }}>
-    <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-      <Typography variant="h6">{opportunity.projectName}</Typography>
-      <Chip 
-        label={opportunity.riskLevel} 
-        color={opportunity.riskLevel === 'Low' ? 'success' : 'warning'}
-      />
-    </Box>
-    <Typography variant="body2" color="text.secondary" gutterBottom>
-      by {opportunity.farmerName} • {opportunity.location}
-    </Typography>
-    <Box sx={{ mb: 2 }}>
-      <Box display="flex" justifyContent="space-between" mb={1}>
-        <Typography variant="body2">Funding Progress</Typography>
-        <Typography variant="body2">
-          ${opportunity.funded.toLocaleString()} / ${opportunity.requiredFunding.toLocaleString()}
-        </Typography>
-      </Box>
-      <LinearProgress 
-        variant="determinate" 
-        value={(opportunity.funded / opportunity.requiredFunding) * 100} 
-      />
-    </Box>
-    <Box display="flex" justifyContent="space-between" alignItems="center">
-      <Box>
-        <Typography variant="body2" color="text.secondary">Expected Return</Typography>
-        <Typography variant="h6" color="success.main">{opportunity.expectedReturn}%</Typography>
-      </Box>
-      <Button variant="contained" color="primary">
-        Invest Now
-      </Button>
-    </Box>
-  </Paper>
-);
+const portfolioDistribution = [
+  { name: 'Organic Farms', value: 400 },
+  { name: 'Livestock', value: 300 },
+  { name: 'Sustainable Ag', value: 300 },
+  { name: 'Tech Farms', value: 200 },
+];
 
-const InvestmentCard = ({ investment }: { investment: any }) => (
-  <Paper sx={{ p: 2, mb: 2 }}>
-    <Typography variant="h6" gutterBottom>
-      {investment.projectName}
-    </Typography>
-    <Typography variant="body2" color="text.secondary" gutterBottom>
-      by {investment.farmerName}
-    </Typography>
-    <Box sx={{ mb: 2 }}>
-      <Box display="flex" justifyContent="space-between" mb={1}>
-        <Typography variant="body2">Progress</Typography>
-        <Typography variant="body2">{investment.progress}%</Typography>
-      </Box>
-      <LinearProgress variant="determinate" value={investment.progress} />
-    </Box>
-    <Grid container spacing={2}>
-      <Grid item xs={6}>
-        <Typography variant="body2" color="text.secondary">Invested Amount</Typography>
-        <Typography variant="h6">${investment.investedAmount.toLocaleString()}</Typography>
-      </Grid>
-      <Grid item xs={6}>
-        <Typography variant="body2" color="text.secondary">Expected Return</Typography>
-        <Typography variant="h6" color="success.main">{investment.expectedReturn}%</Typography>
-      </Grid>
-    </Grid>
-  </Paper>
-);
+const recentActivities = [
+  { type: 'Investment', description: 'New investment in Organic Valley Farm', amount: '+$10,000', date: '2 hours ago' },
+  { type: 'Return', description: 'Quarterly returns from Farm B', amount: '+$2,500', date: '1 day ago' },
+  { type: 'Withdrawal', description: 'Withdrawal to Bank Account', amount: '-$5,000', date: '3 days ago' },
+];
 
-const InvestorDashboardTest = () => {
-  const { portfolio, investmentOpportunities, activeInvestments, recentTransactions } = mockInvestorData;
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
+const InvestorDashboard = () => {
   return (
-    <Layout>
+    <Box
+      component="main"
+      sx={{
+        backgroundColor: (theme) => theme.palette.grey[100],
+        flexGrow: 1,
+        height: '100vh',
+        overflow: 'auto',
+      }}
+    >
+      <DashboardNav userType="investor" />
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        {/* Welcome Section */}
         <Grid container spacing={3}>
-          {/* Portfolio Stats */}
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Total Invested"
-              value={portfolio.totalInvested}
-              icon={<AccountBalance color="primary" />}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Active Investments"
-              value={portfolio.activeInvestments}
-              icon={<Assessment color="primary" />}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Average Return"
-              value={portfolio.averageReturn}
-              icon={<TrendingUp color="primary" />}
-              suffix="%"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Total Returns"
-              value={portfolio.totalReturn}
-              icon={<SwapHoriz color="primary" />}
-            />
-          </Grid>
-
-          {/* Investment Opportunities */}
-          <Grid item xs={12} md={8}>
-            <Paper sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
-                Investment Opportunities
-              </Typography>
-              {investmentOpportunities.map((opportunity) => (
-                <OpportunityCard key={opportunity.id} opportunity={opportunity} />
-              ))}
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3, mb: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>JD</Avatar>
+                  <Box>
+                    <Typography variant="h5">Welcome back, John Doe</Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Your portfolio is performing well today
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box>
+                  <IconButton>
+                    <Notifications />
+                  </IconButton>
+                  <IconButton>
+                    <MoreVert />
+                  </IconButton>
+                </Box>
+              </Box>
             </Paper>
           </Grid>
 
-          {/* Recent Transactions */}
-          <Grid item xs={12} md={4}>
-            <Paper sx={{ p: 2 }}>
+          {/* Key Metrics */}
+          <Grid item xs={12} md={3}>
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Total Portfolio Value
+                </Typography>
+                <Typography variant="h4">$125,000</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', color: 'success.main' }}>
+                  <TrendingUp />
+                  <Typography variant="body2" sx={{ ml: 1 }}>
+                    +15.3% this month
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={3}>
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Total Returns
+                </Typography>
+                <Typography variant="h4">$28,500</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', color: 'success.main' }}>
+                  <TrendingUp />
+                  <Typography variant="body2" sx={{ ml: 1 }}>
+                    +8.2% this month
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={3}>
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Active Investments
+                </Typography>
+                <Typography variant="h4">12</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Agriculture />
+                  <Typography variant="body2" sx={{ ml: 1 }}>
+                    Across 5 regions
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={3}>
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Available Balance
+                </Typography>
+                <Typography variant="h4">$15,000</Typography>
+                <Button variant="contained" size="small" sx={{ mt: 1 }}>
+                  Invest Now
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Portfolio Performance */}
+          <Grid item xs={12} md={8}>
+            <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
-                Recent Transactions
+                Portfolio Performance
+              </Typography>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={performanceData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="returns" stroke="#8884d8" name="Your Returns" />
+                  <Line type="monotone" dataKey="benchmark" stroke="#82ca9d" name="Market Benchmark" />
+                </LineChart>
+              </ResponsiveContainer>
+            </Paper>
+          </Grid>
+
+          {/* Portfolio Distribution */}
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Portfolio Distribution
+              </Typography>
+              <ResponsiveContainer width="100%" height={300}>
+                <RechartsPieChart>
+                  <Pie
+                    data={portfolioDistribution}
+                    innerRadius={60}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {portfolioDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </RechartsPieChart>
+              </ResponsiveContainer>
+            </Paper>
+          </Grid>
+
+          {/* Recent Activities */}
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Recent Activities
               </Typography>
               <List>
-                {recentTransactions.map((transaction) => (
-                  <React.Fragment key={transaction.id}>
+                {recentActivities.map((activity, index) => (
+                  <React.Fragment key={index}>
                     <ListItem>
                       <ListItemText
-                        primary={
-                          <Box display="flex" justifyContent="space-between">
-                            <Typography>{transaction.type}</Typography>
-                            <Typography color={transaction.type === 'Return' ? 'success.main' : 'primary'}>
-                              ${transaction.amount.toLocaleString()}
-                            </Typography>
-                          </Box>
-                        }
-                        secondary={`${transaction.date} • ${transaction.project}`}
+                        primary={activity.description}
+                        secondary={activity.date}
                       />
+                      <Typography
+                        variant="body2"
+                        color={activity.amount.startsWith('+') ? 'success.main' : 'error.main'}
+                      >
+                        {activity.amount}
+                      </Typography>
                     </ListItem>
-                    <Divider />
+                    {index < recentActivities.length - 1 && <Divider />}
                   </React.Fragment>
                 ))}
               </List>
             </Paper>
           </Grid>
 
-          {/* Active Investments */}
-          <Grid item xs={12}>
-            <Paper sx={{ p: 2 }}>
+          {/* Investment Opportunities */}
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
-                Active Investments
+                Featured Investment Opportunities
               </Typography>
-              <Grid container spacing={3}>
-                {activeInvestments.map((investment) => (
-                  <Grid item xs={12} md={6} key={investment.id}>
-                    <InvestmentCard investment={investment} />
-                  </Grid>
-                ))}
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" color="primary">
+                        Organic Valley Farm Expansion
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary" gutterBottom>
+                        High-yield organic farming opportunity
+                      </Typography>
+                      <Box sx={{ mt: 2, mb: 1 }}>
+                        <Typography variant="body2">Funding Progress</Typography>
+                        <LinearProgress variant="determinate" value={75} />
+                        <Typography variant="body2" sx={{ mt: 1 }}>
+                          $750,000 / $1,000,000
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+                        <Chip label="15% Expected ROI" color="success" />
+                        <Button variant="contained" size="small">
+                          Learn More
+                        </Button>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
+
+          {/* Quick Actions */}
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Quick Actions
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={3}>
+                  <Button variant="outlined" fullWidth startIcon={<MonetizationOn />}>
+                    Add Funds
+                  </Button>
+                </Grid>
+                <Grid item xs={12} sm={3}>
+                  <Button variant="outlined" fullWidth startIcon={<Assessment />}>
+                    View Reports
+                  </Button>
+                </Grid>
+                <Grid item xs={12} sm={3}>
+                  <Button variant="outlined" fullWidth startIcon={<AccountBalance />}>
+                    Withdraw
+                  </Button>
+                </Grid>
+                <Grid item xs={12} sm={3}>
+                  <Button variant="outlined" fullWidth startIcon={<Timeline />}>
+                    Analytics
+                  </Button>
+                </Grid>
               </Grid>
             </Paper>
           </Grid>
         </Grid>
       </Container>
-    </Layout>
+    </Box>
   );
 };
 
-export default InvestorDashboardTest;
+export default InvestorDashboard;
